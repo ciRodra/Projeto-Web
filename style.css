@@ -1,0 +1,113 @@
+body {
+  height: 150vh; 
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  min-height: 100vh;
+  font-family: Arial, Helvetica, sans-serif;
+  background-color: #004b08;
+  background-image: url("fundo-naipes.png");
+  background-size: 2000px;
+}
+
+header {
+  background: #b40000;
+  height: 125px;
+  box-shadow: 0 0 15px #000;
+}
+
+.topo {
+  width: 75%;
+  margin: auto;
+  display: flex;
+  align-items: center;
+  padding-top: 32px;
+}
+
+.logo {
+  background: #000;
+  color: #fff;
+  font-family: Georgia, serif;
+  font-size: 32px;
+  font-weight: bold;
+  padding: 8px 18px;
+  transform: rotate(-2deg);
+  box-shadow: 4px 4px 0 #111;
+}
+
+.info {
+  margin-left: 25px;
+  color: white;
+  font-size: 11px;
+  flex: 1;
+}
+
+.linha {
+  height: 1px;
+  background: #111;
+  margin-top: 6px;
+}
+
+nav {
+  text-align: center;
+  margin-top: 10px;
+  color: #ffffff;
+}
+
+nav a {
+  color: #ffffff;
+  text-decoration: none;
+  font-weight: bold;
+  margin: 0 4px;
+  font-size: 16px;
+}
+
+main {
+  padding-top: 240px;
+}
+
+.conteudo {
+  width: 72%;
+  margin: auto;
+  background: white;
+  min-height: 390px;
+  padding: 35px 20px;
+  box-shadow: 0 0 25px #333;
+}
+
+.conteudo h2 {
+  color: #9b0000;
+  font-size: 20px;
+  font-family: Georgia, serif;
+  margin-bottom: 40px;
+  text-align: center;
+}
+
+.jogos {
+  display: flex;
+  justify-content: center;
+  gap: 40px;
+}
+
+.card {
+  width: 150px;
+  height: 200px;
+  background: white;
+  box-shadow: inset 0 0 18px #777;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 15px;
+}
+
+.card img {
+  width: 90px;
+  max-height: 95px;
+  object-fit: contain;
+}
