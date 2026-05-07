@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>BDN.BET</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="styles/paginaInicial.css">
 </head>
 <body>
 
@@ -19,16 +19,15 @@
         </div>
 
         <nav>
-          <a href="off.html">Jogar</a>
-          <a href="off.html">Nossos Jogos</a>
-          <a href="off.html">Nossos Aplicativos</a>
-          <a href="off.html">Devs</a>
+          <a href="off.html">Jogos</a>
+          <a href="off.html">Meu Perfil</a>
+          <a href="off.html">Desenvolvedores</a>
         </nav>
       </div>
 
       <div class="botoes-auth" id="area-login">
         <a href="#" class="btn-login" onclick="abrirModal()">Login</a>
-        <a href="#" class="btn-cadastro" onclick="abrirCadastro()">Cadastro</a>
+        <a href="cadastro.html" class="btn-cadastro">Cadastre-se</a>
       </div>
 
     </div>
@@ -39,34 +38,29 @@
 
       <h2>
         Jogue On-line, sozinho e com seus amigos na BDN!
-        Divirta-se com Crash, Roleta e muito mais
+        Divirta-se com Crash, Roleta e muito mais!
       </h2>
 
       <div class="jogos">
 
         <a class="card card-button" href="off.html">
-          <img src="aviao.png" alt="aviãozinho">
-          <span>Aviãozinho</span>
+          <img src="assets/aviao.png" alt="aviãozinho">
+          <span>Jogo do avião</span>
         </a>
 
         <a class="card card-button" href="off.html">
-          <img src="blocos.png" alt="Jogo de blocos">
-          <span>Blocos</span>
+          <img src="assets/blocos.png" alt="Jogo de blocos">
+          <span>Jogo do blocos</span>
         </a>
 
         <a class="card card-button" href="off.html">
-          <img src="cartas.png" alt="Jogo de cartas">
-          <span>Cartas</span>
+          <img src="assets/aviao.png" alt="Jogo de cartas">
+          <span>Placeholder</span>
         </a>
 
         <a class="card card-button" href="off.html">
-          <img src="cartas.png" alt="Jogo de cartas">
-          <span>x</span>
-        </a>
-
-        <a class="card card-button" href="off.html">
-          <img src="cartas.png" alt="Jogo de cartas">
-          <span>y</span>
+          <img src="assets/cartas.png" alt="Jogo de cartas">
+          <span>Jogo de baralho</span>
         </a>
 
       </div>
@@ -149,30 +143,6 @@
 
     function fecharModal() {
       document.getElementById("modal-login").style.display = "none";
-    }
-
-    function abrirCadastro() {
-      document.getElementById("modal-cadastro").style.display = "flex";
-    }
-
-    function fecharCadastro() {
-      document.getElementById("modal-cadastro").style.display = "none";
-    }
-
-    function cadastrar() {
-
-      let usuario = document.getElementById("cadastro-user").value;
-      let senha = document.getElementById("cadastro-senha").value;
-
-      localStorage.setItem("usuario", usuario);
-      localStorage.setItem("senha", senha);
-
-      document.getElementById("mensagem-cadastro").innerHTML =
-      "Cadastro realizado!";
-
-      document.getElementById("area-login").style.display = "none";
-
-      fecharCadastro();
     }
 
     function login() {
