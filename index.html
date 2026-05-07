@@ -9,44 +9,81 @@
 
   <header>
     <div class="topo">
+
       <div class="logo">BDN.GAMES</div>
 
       <div class="info">
-        <span>4523 jogadores nas salas</span>
+        <span id="playerCount">4523 jogadores nas salas</span>
         <div class="linha"></div>
       </div>
     </div>
 
     <nav>
-      <a href="https://www.youtube.com/">Jogar</a>
-      <a href="#">Nossos Jogos</a>
-      <a href="#">Nossos Aplicativos</a>
-      <a href="#">Mais</a>
+      <a>Jogar</a>
+      <a href="off.html">Nossos Jogos</a>
+      <a href="off.html">Nossos Aplicativos</a>
+      <a href="off.html">Devs</a>
     </nav>
   </header>
 
   <main>
     <section class="conteudo">
       <h2>
-        Jogue On-line sozinho e com seus amigos na BDN! 
+        Jogue On-line, sozinho e com seus amigos na BDN! 
         Divirta-se com Crash, Roleta e muito mais
       </h2>
-
       <div class="jogos">
-        <div class="card">
-          <img src="aviao.png" alt="Jogo Crash">
+        
+        <div class="card card-button">
+          <img src="aviao.png" alt="aviãozinho">
+          <a href="off.html">Aviãozinho </a>
         </div>
 
-        <div class="card">
+        <div class="card card-button">
           <img src="blocos.png" alt="Jogo de blocos">
+          <a href="off.html">Blocos</a>
         </div>
 
-        <div class="card">
+        <div class="card card-button">
           <img src="cartas.png" alt="Jogo de cartas">
+          <a href="off.html">Cartas</a>
+        </div>
+
+        <div class="card card-button">
+          <img src="cartas.png" alt="Jogo de cartas">
+          <a href="off.html">x</a>
+        </div>
+
+        <div class="card card-button">
+          <img src="cartas.png" alt="Jogo de cartas">
+          <a href="off.html">y</a>
         </div>
       </div>
     </section>
   </main>
+
+  <script>
+    let currentPlayers = 4523;
+    let isIncreasing = true;
+
+    function updatePlayerCount() {
+      if (isIncreasing) {
+        currentPlayers += Math.floor(Math.random() * 10) + 1;
+        if (currentPlayers > 10000) {
+          isIncreasing = false;
+        }
+      } else {
+        currentPlayers -= Math.floor(Math.random() * 8) + 1;
+        if (currentPlayers < 3000) {
+          isIncreasing = true;
+        }
+      }
+      
+      document.getElementById('playerCount').textContent = currentPlayers + ' jogadores nas salas';
+    }
+
+    setInterval(updatePlayerCount, 2000);
+  </script>
 
 </body>
 </html>
