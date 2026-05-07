@@ -10,30 +10,40 @@
   <header>
     <div class="topo">
 
-      <a class="logo" href="index.html">BDN.GAMES</a>
+      <a class="logo" href="off.html">BDN.GAMES</a>
 
-      <div class="info">
-        <span id="playerCount">4523 jogadores nas salas</span>
-        <div class="linha"></div>
+      <div class="header-right">
+        <div class="info">
+          <span id="playerCount">4523 jogadores nas salas</span>
+          <div class="linha"></div>
+        </div>
+
+        <nav>
+          <a href="off.html">Jogar</a>
+          <a href="off.html">Nossos Jogos</a>
+          <a href="off.html">Nossos Aplicativos</a>
+          <a href="off.html">Devs</a>
+        </nav>
       </div>
-    </div>
 
-    <nav>
-      <a href="off.html">Jogar</a>
-      <a href="off.html">Nossos Jogos</a>
-      <a href="off.html">Nossos Aplicativos</a>
-      <a href="off.html">Devs</a>
-    </nav>
+      <div class="botoes-auth" id="area-login">
+        <a href="#" class="btn-login" onclick="abrirModal()">Login</a>
+        <a href="#" class="btn-cadastro" onclick="abrirCadastro()">Cadastro</a>
+      </div>
+
+    </div>
   </header>
 
   <main>
     <section class="conteudo">
+
       <h2>
-        Jogue On-line, sozinho e com seus amigos na BDN! 
+        Jogue On-line, sozinho e com seus amigos na BDN!
         Divirta-se com Crash, Roleta e muito mais
       </h2>
+
       <div class="jogos">
-        
+
         <a class="card card-button" href="off.html">
           <img src="aviao.png" alt="aviãozinho">
           <span>Aviãozinho</span>
@@ -58,31 +68,137 @@
           <img src="cartas.png" alt="Jogo de cartas">
           <span>y</span>
         </a>
+
       </div>
     </section>
   </main>
 
+  <div id="modal-login" class="modal">
+
+    <div class="modal-conteudo">
+
+      <span class="fechar" onclick="fecharModal()">&times;</span>
+
+      <h2>Login</h2>
+
+      <input type="text" id="login-user" placeholder="Usuário">
+
+      <input type="password" id="login-senha" placeholder="Senha">
+
+      <button class="entrar" onclick="login()">Entrar</button>
+
+      <p id="mensagem-login"></p>
+
+    </div>
+
+  </div>
+
+  <div id="modal-cadastro" class="modal">
+
+    <div class="modal-conteudo">
+
+      <span class="fechar" onclick="fecharCadastro()">&times;</span>
+
+      <h2>Cadastro</h2>
+
+      <input type="text" id="cadastro-user" placeholder="Usuário">
+
+      <input type="password" id="cadastro-senha" placeholder="Senha">
+
+      <button class="entrar" onclick="cadastrar()">Cadastrar</button>
+
+      <p id="mensagem-cadastro"></p>
+
+    </div>
+
+  </div>
+
   <script>
+
     let currentPlayers = 4523;
     let isIncreasing = true;
 
     function updatePlayerCount() {
+
       if (isIncreasing) {
+
         currentPlayers += Math.floor(Math.random() * 10) + 1;
+
         if (currentPlayers > 10000) {
           isIncreasing = false;
         }
+
       } else {
+
         currentPlayers -= Math.floor(Math.random() * 8) + 1;
+
         if (currentPlayers < 3000) {
           isIncreasing = true;
         }
       }
-      
-      document.getElementById('playerCount').textContent = currentPlayers + ' jogadores nas salas';
+
+      document.getElementById('playerCount').textContent =
+      currentPlayers + ' jogadores nas salas';
     }
 
     setInterval(updatePlayerCount, 2000);
+
+    function abrirModal() {
+      document.getElementById("modal-login").style.display = "flex";
+    }
+
+    function fecharModal() {
+      document.getElementById("modal-login").style.display = "none";
+    }
+
+    function abrirCadastro() {
+      document.getElementById("modal-cadastro").style.display = "flex";
+    }
+
+    function fecharCadastro() {
+      document.getElementById("modal-cadastro").style.display = "none";
+    }
+
+    function cadastrar() {
+
+      let usuario = document.getElementById("cadastro-user").value;
+      let senha = document.getElementById("cadastro-senha").value;
+
+      localStorage.setItem("usuario", usuario);
+      localStorage.setItem("senha", senha);
+
+      document.getElementById("mensagem-cadastro").innerHTML =
+      "Cadastro realizado!";
+
+      document.getElementById("area-login").style.display = "none";
+
+      fecharCadastro();
+    }
+
+    function login() {
+
+      let usuario = document.getElementById("login-user").value;
+      let senha = document.getElementById("login-senha").value;
+
+      let usuarioSalvo = localStorage.getItem("usuario");
+      let senhaSalva = localStorage.getItem("senha");
+
+      if(usuario === usuarioSalvo && senha === senhaSalva){
+
+        document.getElementById("mensagem-login").innerHTML =
+        "Login realizado!";
+
+        document.getElementById("area-login").style.display = "none";
+
+        fecharModal();
+
+      } else {
+
+        document.getElementById("mensagem-login").innerHTML =
+        "Usuário ou senha incorretos!";
+      }
+    }
+
   </script>
 
 </body>
