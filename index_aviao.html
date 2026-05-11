@@ -520,6 +520,7 @@
       ctx.shadowOffsetY = 8;
 
       if (planeImage.complete && planeImage.naturalWidth) {
+        ctx.scale(-1, 1);
         ctx.drawImage(
           planeImage,
           -plane.width / 2,
