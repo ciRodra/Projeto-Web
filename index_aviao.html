@@ -137,6 +137,12 @@
     const finalScore = document.getElementById("finalScore");
     const planeImage = new Image();
     planeImage.src = "assets/aviao.png";
+    const stars = Array.from({ length: 64 }, (_, index) => ({
+      x: (index * 149) % canvas.width,
+      y: 28 + ((index * 67) % 240),
+      size: 1 + (index % 3) * 0.55,
+      alpha: 0.38 + (index % 5) * 0.12
+    }));
 
     const audio = {
       context: null,
@@ -258,6 +264,7 @@
       score: 0,
       distance: 0,
       groundOffset: 0,
+      nightLevel: 0,
       plane: {
         x: 190,
         y: 250,
@@ -278,6 +285,7 @@
       game.score = 0;
       game.distance = 0;
       game.groundOffset = 0;
+      game.nightLevel = 0;
       game.plane.y = 250;
       game.plane.velocity = game.jumpVelocity * 0.75;
       game.plane.rotation = 0;
@@ -331,6 +339,7 @@
         -0.45,
         Math.min(0.75, game.plane.velocity / 760)
       );
+      updateEnvironment(delta);
 
       game.obstacles.forEach((obstacle) => {
         obstacle.x -= game.obstacleSpeed * delta;
@@ -357,6 +366,12 @@
       if (hasCollision()) {
         endGame();
       }
+    }
+
+    function updateEnvironment(delta) {
+      const targetNight = game.score >= 25 && game.score < 40 ? 1 : 0;
+      const step = Math.min(delta * 1.65, 1);
+      game.nightLevel += (targetNight - game.nightLevel) * step;
     }
 
     function hasCollision() {
@@ -419,6 +434,7 @@
     }
 
     function drawSky() {
+      const night = game.nightLevel;
       const sky = ctx.createLinearGradient(0, 0, 0, game.height);
       sky.addColorStop(0, "#7fc7ff");
       sky.addColorStop(0.62, "#d7f1ff");
@@ -426,10 +442,73 @@
       ctx.fillStyle = sky;
       ctx.fillRect(0, 0, game.width, game.height);
 
-      ctx.fillStyle = "rgba(255, 255, 255, 0.72)";
+      drawSun(night);
+
+      ctx.fillStyle = `rgba(255, 255, 255, ${0.72 - night * 0.44})`;
       drawCloud(120 - (game.distance * 0.12) % 1120, 86, 1.05);
       drawCloud(520 - (game.distance * 0.09) % 1180, 148, 0.72);
       drawCloud(900 - (game.distance * 0.1) % 1200, 72, 0.88);
+
+      if (night > 0.01) {
+        const nightSky = ctx.createLinearGradient(0, 0, 0, game.height);
+        nightSky.addColorStop(0, `rgba(7, 11, 34, ${0.86 * night})`);
+        nightSky.addColorStop(0.65, `rgba(12, 23, 52, ${0.72 * night})`);
+        nightSky.addColorStop(1, `rgba(8, 13, 26, ${0.46 * night})`);
+        ctx.fillStyle = nightSky;
+        ctx.fillRect(0, 0, game.width, game.height);
+        drawStars(night);
+        drawMoon(night);
+      }
+    }
+
+    function drawSun(night) {
+      const sunAlpha = 1 - night;
+
+      if (sunAlpha > 0.01) {
+        ctx.save();
+        ctx.globalAlpha = sunAlpha;
+        const sunGlow = ctx.createRadialGradient(790, 92, 12, 790, 92, 84);
+        sunGlow.addColorStop(0, "rgba(255, 244, 164, 0.72)");
+        sunGlow.addColorStop(1, "rgba(255, 244, 164, 0)");
+        ctx.fillStyle = sunGlow;
+        ctx.fillRect(700, 8, 180, 170);
+        ctx.fillStyle = "#f5d14f";
+        ctx.beginPath();
+        ctx.arc(790, 92, 28, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+    }
+
+    function drawMoon(night) {
+      if (night > 0.01) {
+        ctx.save();
+        ctx.globalAlpha = night;
+        const moonGlow = ctx.createRadialGradient(794, 90, 10, 794, 90, 74);
+        moonGlow.addColorStop(0, "rgba(238, 243, 255, 0.52)");
+        moonGlow.addColorStop(1, "rgba(238, 243, 255, 0)");
+        ctx.fillStyle = moonGlow;
+        ctx.fillRect(715, 15, 160, 150);
+        ctx.fillStyle = "#eef3ff";
+        ctx.beginPath();
+        ctx.arc(794, 90, 25, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = "rgba(7, 11, 34, 0.42)";
+        ctx.beginPath();
+        ctx.arc(806, 82, 25, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+    }
+
+    function drawStars(night) {
+      ctx.save();
+      stars.forEach((star) => {
+        const twinkle = 0.75 + Math.sin(game.distance * 0.012 + star.x) * 0.25;
+        ctx.fillStyle = `rgba(255, 255, 255, ${star.alpha * night * twinkle})`;
+        ctx.fillRect(star.x, star.y, star.size, star.size);
+      });
+      ctx.restore();
     }
 
     function drawCloud(x, y, scale) {
@@ -441,6 +520,7 @@
     }
 
     function drawRunway() {
+      const night = game.nightLevel;
       const runwayY = game.height - 62;
       const ground = ctx.createLinearGradient(0, runwayY, 0, game.height);
       ground.addColorStop(0, "#4c4f50");
@@ -448,9 +528,22 @@
       ctx.fillStyle = ground;
       ctx.fillRect(0, runwayY, game.width, 62);
 
-      ctx.fillStyle = "#f5d14f";
+      ctx.fillStyle = night > 0.5 ? "#ffe071" : "#f5d14f";
       for (let x = -game.groundOffset; x < game.width; x += 80) {
         ctx.fillRect(x + 18, runwayY + 28, 42, 6);
+      }
+
+      if (night > 0.01) {
+        ctx.save();
+        ctx.globalAlpha = night;
+        for (let x = 28 - game.groundOffset; x < game.width; x += 80) {
+          const light = ctx.createRadialGradient(x, runwayY + 13, 2, x, runwayY + 13, 18);
+          light.addColorStop(0, "rgba(255, 226, 98, 0.92)");
+          light.addColorStop(1, "rgba(255, 226, 98, 0)");
+          ctx.fillStyle = light;
+          ctx.fillRect(x - 20, runwayY - 5, 40, 36);
+        }
+        ctx.restore();
       }
 
       ctx.fillStyle = "rgba(255,255,255,0.22)";
@@ -539,10 +632,11 @@
     }
 
     function drawGlassShine() {
+      const night = game.nightLevel;
       const shine = ctx.createLinearGradient(0, 0, game.width, game.height);
-      shine.addColorStop(0, "rgba(255,255,255,0.28)");
+      shine.addColorStop(0, `rgba(255,255,255,${0.28 - night * 0.12})`);
       shine.addColorStop(0.34, "rgba(255,255,255,0.04)");
-      shine.addColorStop(1, "rgba(0,0,0,0.08)");
+      shine.addColorStop(1, `rgba(0,0,0,${0.08 + night * 0.16})`);
       ctx.fillStyle = shine;
       ctx.fillRect(0, 0, game.width, game.height);
     }
