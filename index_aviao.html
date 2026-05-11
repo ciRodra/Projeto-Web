@@ -1,1 +1,447 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BDN.GAMES | Jogo do Avião</title>
+  <link rel="stylesheet" href="style_aviao.css">
+</head>
+<body>
 
+  <header>
+    <div class="topo">
+
+      <a class="logo" href="index.html">BDN.GAMES</a>
+
+      <div class="header-right">
+        <div class="info">
+          <span id="playerCount">4523 jogadores nas salas</span>
+          <div class="linha"></div>
+        </div>
+
+        <nav>
+          <a href="index.html">Jogos</a>
+          <a href="off.html">Meu Perfil</a>
+          <a href="off.html">Desenvolvedores</a>
+        </nav>
+      </div>
+
+      <div class="botoes-auth" id="area-login">
+        <a href="#" class="btn-login" onclick="abrirModal()">Login</a>
+        <a href="cadastro.html" class="btn-cadastro">Cadastre-se</a>
+      </div>
+
+    </div>
+  </header>
+
+  <main class="game-page">
+    <section class="game-shell" aria-label="Jogo do avião">
+      <div class="game-header">
+        <div>
+          <p class="game-kicker">BDN Airfield</p>
+          <h1>Jogo do Avião</h1>
+        </div>
+        <div class="score-board" aria-live="polite">
+          <span>Pontos</span>
+          <strong id="scoreText">0</strong>
+        </div>
+      </div>
+
+      <div class="game-frame">
+        <canvas id="gameCanvas" width="960" height="540" aria-label="Área jogável"></canvas>
+
+        <div class="game-overlay is-visible" id="startOverlay">
+          <div class="overlay-panel">
+            <h2>Pronto para decolar?</h2>
+            <p>Céu aberto, motores prontos.</p>
+            <button class="game-button" id="startButton" type="button">Iniciar</button>
+          </div>
+        </div>
+
+        <div class="game-overlay" id="deathOverlay">
+          <div class="overlay-panel">
+            <h2>Fim de voo</h2>
+            <p>Sua pontuação foi <strong id="finalScore">0</strong>.</p>
+            <button class="game-button" id="restartButton" type="button">Reiniciar</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="modal-login" class="modal">
+    <div class="modal-conteudo">
+      <span class="fechar" onclick="fecharModal()">&times;</span>
+      <h2>Login</h2>
+      <input type="text" id="login-user" placeholder="Usuário">
+      <input type="password" id="login-senha" placeholder="Senha">
+      <button class="entrar" onclick="login()">Entrar</button>
+      <p id="mensagem-login"></p>
+    </div>
+  </div>
+
+  <script>
+    let currentPlayers = 4523;
+    let isIncreasing = true;
+
+    function updatePlayerCount() {
+      if (isIncreasing) {
+        currentPlayers += Math.floor(Math.random() * 10) + 1;
+        if (currentPlayers > 10000) {
+          isIncreasing = false;
+        }
+      } else {
+        currentPlayers -= Math.floor(Math.random() * 8) + 1;
+        if (currentPlayers < 3000) {
+          isIncreasing = true;
+        }
+      }
+
+      document.getElementById('playerCount').textContent =
+        currentPlayers + ' jogadores nas salas';
+    }
+
+    setInterval(updatePlayerCount, 2000);
+
+    function abrirModal() {
+      document.getElementById("modal-login").style.display = "flex";
+    }
+
+    function fecharModal() {
+      document.getElementById("modal-login").style.display = "none";
+    }
+
+    function login() {
+      const usuario = document.getElementById("login-user").value;
+      const senha = document.getElementById("login-senha").value;
+      const usuarioSalvo = localStorage.getItem("usuario");
+      const senhaSalva = localStorage.getItem("senha");
+
+      if (usuario === usuarioSalvo && senha === senhaSalva) {
+        document.getElementById("mensagem-login").innerHTML = "Login realizado!";
+        document.getElementById("area-login").style.display = "none";
+        fecharModal();
+      } else {
+        document.getElementById("mensagem-login").innerHTML =
+          "Usuário ou senha incorretos!";
+      }
+    }
+
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+    const startOverlay = document.getElementById("startOverlay");
+    const deathOverlay = document.getElementById("deathOverlay");
+    const startButton = document.getElementById("startButton");
+    const restartButton = document.getElementById("restartButton");
+    const scoreText = document.getElementById("scoreText");
+    const finalScore = document.getElementById("finalScore");
+    const planeImage = new Image();
+    planeImage.src = "assets/aviao.png";
+
+    const game = {
+      width: canvas.width,
+      height: canvas.height,
+      state: "idle",
+      gravity: 1450,
+      jumpVelocity: -470,
+      obstacleSpeed: 285,
+      obstacleSpacing: 330,
+      obstacleWidth: 94,
+      gapHeight: 190,
+      lastTime: 0,
+      score: 0,
+      distance: 0,
+      groundOffset: 0,
+      plane: {
+        x: 190,
+        y: 250,
+        width: 86,
+        height: 58,
+        velocity: 0,
+        rotation: 0
+      },
+      obstacles: []
+    };
+
+    function resetGame() {
+      game.state = "running";
+      game.lastTime = 0;
+      game.score = 0;
+      game.distance = 0;
+      game.groundOffset = 0;
+      game.plane.y = 250;
+      game.plane.velocity = game.jumpVelocity * 0.75;
+      game.plane.rotation = 0;
+      game.obstacles = [];
+      scoreText.textContent = "0";
+      startOverlay.classList.remove("is-visible");
+      deathOverlay.classList.remove("is-visible");
+      spawnObstacle(game.width + 40);
+      requestAnimationFrame(loop);
+    }
+
+    function flap() {
+      if (game.state === "idle") {
+        resetGame();
+        return;
+      }
+
+      if (game.state !== "running") {
+        return;
+      }
+
+      game.plane.velocity = game.jumpVelocity;
+    }
+
+    function spawnObstacle(xPosition) {
+      const margin = 86;
+      const minCenter = margin + game.gapHeight / 2;
+      const maxCenter = game.height - 96 - game.gapHeight / 2;
+      const wave = Math.sin((game.distance + xPosition) / 210) * 48;
+      const randomDrift = (Math.random() - 0.5) * 110;
+      const center = Math.max(
+        minCenter,
+        Math.min(maxCenter, game.height / 2 + wave + randomDrift)
+      );
+
+      game.obstacles.push({
+        x: xPosition,
+        gapY: center - game.gapHeight / 2,
+        passed: false
+      });
+    }
+
+    function update(delta) {
+      game.distance += game.obstacleSpeed * delta;
+      game.groundOffset = (game.groundOffset + game.obstacleSpeed * delta) % 80;
+
+      game.plane.velocity += game.gravity * delta;
+      game.plane.y += game.plane.velocity * delta;
+      game.plane.rotation = Math.max(
+        -0.45,
+        Math.min(0.75, game.plane.velocity / 760)
+      );
+
+      game.obstacles.forEach((obstacle) => {
+        obstacle.x -= game.obstacleSpeed * delta;
+
+        if (!obstacle.passed && obstacle.x + game.obstacleWidth < game.plane.x) {
+          obstacle.passed = true;
+          game.score += 1;
+          scoreText.textContent = game.score;
+        }
+      });
+
+      game.obstacles = game.obstacles.filter(
+        (obstacle) => obstacle.x + game.obstacleWidth > -30
+      );
+
+      const lastObstacle = game.obstacles[game.obstacles.length - 1];
+      if (!lastObstacle || lastObstacle.x <= game.width - game.obstacleSpacing) {
+        const nextX = lastObstacle
+          ? lastObstacle.x + game.obstacleSpacing
+          : game.width + 40;
+        spawnObstacle(nextX);
+      }
+
+      if (hasCollision()) {
+        endGame();
+      }
+    }
+
+    function hasCollision() {
+      const padding = 12;
+      const planeBox = {
+        left: game.plane.x + padding,
+        right: game.plane.x + game.plane.width - padding,
+        top: game.plane.y + padding,
+        bottom: game.plane.y + game.plane.height - padding
+      };
+
+      if (planeBox.top < 0 || planeBox.bottom > game.height - 62) {
+        return true;
+      }
+
+      return game.obstacles.some((obstacle) => {
+        const obstacleLeft = obstacle.x;
+        const obstacleRight = obstacle.x + game.obstacleWidth;
+        const topObstacleBottom = obstacle.gapY;
+        const bottomObstacleTop = obstacle.gapY + game.gapHeight;
+        const horizontallyAligned =
+          planeBox.right > obstacleLeft && planeBox.left < obstacleRight;
+
+        return horizontallyAligned &&
+          (planeBox.top < topObstacleBottom || planeBox.bottom > bottomObstacleTop);
+      });
+    }
+
+    function endGame() {
+      game.state = "dead";
+      finalScore.textContent = game.score;
+      deathOverlay.classList.add("is-visible");
+    }
+
+    function loop(timestamp) {
+      if (game.state !== "running") {
+        draw();
+        return;
+      }
+
+      if (!game.lastTime) {
+        game.lastTime = timestamp;
+      }
+
+      const delta = Math.min((timestamp - game.lastTime) / 1000, 0.033);
+      game.lastTime = timestamp;
+      update(delta);
+      draw();
+      requestAnimationFrame(loop);
+    }
+
+    function draw() {
+      drawSky();
+      drawRunway();
+      game.obstacles.forEach(drawObstacle);
+      drawPlane();
+      drawGlassShine();
+    }
+
+    function drawSky() {
+      const sky = ctx.createLinearGradient(0, 0, 0, game.height);
+      sky.addColorStop(0, "#7fc7ff");
+      sky.addColorStop(0.62, "#d7f1ff");
+      sky.addColorStop(1, "#eef8ff");
+      ctx.fillStyle = sky;
+      ctx.fillRect(0, 0, game.width, game.height);
+
+      ctx.fillStyle = "rgba(255, 255, 255, 0.72)";
+      drawCloud(120 - (game.distance * 0.12) % 1120, 86, 1.05);
+      drawCloud(520 - (game.distance * 0.09) % 1180, 148, 0.72);
+      drawCloud(900 - (game.distance * 0.1) % 1200, 72, 0.88);
+    }
+
+    function drawCloud(x, y, scale) {
+      ctx.beginPath();
+      ctx.ellipse(x, y + 22 * scale, 46 * scale, 20 * scale, 0, 0, Math.PI * 2);
+      ctx.ellipse(x + 38 * scale, y + 12 * scale, 42 * scale, 26 * scale, 0, 0, Math.PI * 2);
+      ctx.ellipse(x + 78 * scale, y + 24 * scale, 52 * scale, 21 * scale, 0, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    function drawRunway() {
+      const runwayY = game.height - 62;
+      const ground = ctx.createLinearGradient(0, runwayY, 0, game.height);
+      ground.addColorStop(0, "#4c4f50");
+      ground.addColorStop(1, "#171819");
+      ctx.fillStyle = ground;
+      ctx.fillRect(0, runwayY, game.width, 62);
+
+      ctx.fillStyle = "#f5d14f";
+      for (let x = -game.groundOffset; x < game.width; x += 80) {
+        ctx.fillRect(x + 18, runwayY + 28, 42, 6);
+      }
+
+      ctx.fillStyle = "rgba(255,255,255,0.22)";
+      ctx.fillRect(0, runwayY + 4, game.width, 3);
+    }
+
+    function drawObstacle(obstacle) {
+      const topHeight = obstacle.gapY;
+      const bottomY = obstacle.gapY + game.gapHeight;
+      const bottomHeight = game.height - 62 - bottomY;
+
+      drawTower(obstacle.x, 0, game.obstacleWidth, topHeight, true);
+      drawTower(obstacle.x, bottomY, game.obstacleWidth, bottomHeight, false);
+    }
+
+    function drawTower(x, y, width, height, inverted) {
+      if (height <= 0) {
+        return;
+      }
+
+      const tower = ctx.createLinearGradient(x, y, x + width, y);
+      tower.addColorStop(0, "#7c1010");
+      tower.addColorStop(0.18, "#d64334");
+      tower.addColorStop(0.5, "#9b0000");
+      tower.addColorStop(0.82, "#560808");
+      tower.addColorStop(1, "#2a0303");
+
+      ctx.fillStyle = tower;
+      ctx.fillRect(x, y, width, height);
+
+      ctx.strokeStyle = "rgba(255,255,255,0.24)";
+      ctx.lineWidth = 2;
+      for (let stripeY = y + 28; stripeY < y + height; stripeY += 62) {
+        ctx.beginPath();
+        ctx.moveTo(x + 12, stripeY);
+        ctx.lineTo(x + width - 12, stripeY + 32);
+        ctx.stroke();
+      }
+
+      const capHeight = 24;
+      const capY = inverted ? y + height - capHeight : y;
+      const cap = ctx.createLinearGradient(x, capY, x, capY + capHeight);
+      cap.addColorStop(0, "#f0f0f0");
+      cap.addColorStop(0.45, "#b8b8b8");
+      cap.addColorStop(1, "#666666");
+
+      ctx.fillStyle = cap;
+      ctx.fillRect(x - 9, capY, width + 18, capHeight);
+      ctx.strokeStyle = "rgba(0,0,0,0.45)";
+      ctx.lineWidth = 3;
+      ctx.strokeRect(x - 9, capY, width + 18, capHeight);
+    }
+
+    function drawPlane() {
+      const plane = game.plane;
+
+      ctx.save();
+      ctx.translate(plane.x + plane.width / 2, plane.y + plane.height / 2);
+      ctx.rotate(plane.rotation);
+      ctx.shadowColor = "rgba(0,0,0,0.35)";
+      ctx.shadowBlur = 16;
+      ctx.shadowOffsetY = 8;
+
+      if (planeImage.complete && planeImage.naturalWidth) {
+        ctx.drawImage(
+          planeImage,
+          -plane.width / 2,
+          -plane.height / 2,
+          plane.width,
+          plane.height
+        );
+      } else {
+        ctx.fillStyle = "#f0f0f0";
+        ctx.beginPath();
+        ctx.ellipse(0, 0, 42, 20, 0, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      ctx.restore();
+    }
+
+    function drawGlassShine() {
+      const shine = ctx.createLinearGradient(0, 0, game.width, game.height);
+      shine.addColorStop(0, "rgba(255,255,255,0.28)");
+      shine.addColorStop(0.34, "rgba(255,255,255,0.04)");
+      shine.addColorStop(1, "rgba(0,0,0,0.08)");
+      ctx.fillStyle = shine;
+      ctx.fillRect(0, 0, game.width, game.height);
+    }
+
+    startButton.addEventListener("click", resetGame);
+    restartButton.addEventListener("click", resetGame);
+    canvas.addEventListener("pointerdown", flap);
+
+    window.addEventListener("keydown", (event) => {
+      if (event.code === "Space" || event.code === "ArrowUp") {
+        event.preventDefault();
+        flap();
+      }
+    });
+
+    draw();
+  </script>
+
+</body>
+</html>
