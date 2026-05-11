@@ -238,6 +238,7 @@ main {
 
 .botoes-auth {
   margin-left: auto;
+  margin-top: 35px;
   display: flex;
   gap: 10px;
   order: 3;

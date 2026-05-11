@@ -108,6 +108,7 @@ nav a:hover {
 
 .botoes-auth {
   margin-left: auto;
+  margin-top: 35px;
   display: flex;
   gap: 10px;
   order: 3;
@@ -430,6 +431,7 @@ canvas {
 
   .botoes-auth {
     margin-left: auto;
+    margin-top: 0;
   }
 }
 
@@ -447,6 +449,7 @@ canvas {
   .botoes-auth {
     width: 100%;
     margin-left: 0;
+    margin-top: 0;
     flex-wrap: wrap;
   }
 
