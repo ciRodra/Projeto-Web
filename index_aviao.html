@@ -149,7 +149,6 @@
       obstacleWidth: 94,
       gapHeight: 190,
       lastTime: 0,
-      spawnTimer: 0,
       score: 0,
       distance: 0,
       groundOffset: 0,
@@ -167,7 +166,6 @@
     function resetGame() {
       game.state = "running";
       game.lastTime = 0;
-      game.spawnTimer = 0;
       game.score = 0;
       game.distance = 0;
       game.groundOffset = 0;
@@ -178,8 +176,7 @@
       scoreText.textContent = "0";
       startOverlay.classList.remove("is-visible");
       deathOverlay.classList.remove("is-visible");
-      spawnObstacle(980);
-      spawnObstacle(980 + game.obstacleSpacing);
+      spawnObstacle(game.width + 40);
       requestAnimationFrame(loop);
     }
 
@@ -225,12 +222,6 @@
         Math.min(0.75, game.plane.velocity / 760)
       );
 
-      game.spawnTimer += delta;
-      if (game.spawnTimer > game.obstacleSpacing / game.obstacleSpeed) {
-        game.spawnTimer = 0;
-        spawnObstacle(game.width + 40);
-      }
-
       game.obstacles.forEach((obstacle) => {
         obstacle.x -= game.obstacleSpeed * delta;
 
@@ -244,6 +235,14 @@
       game.obstacles = game.obstacles.filter(
         (obstacle) => obstacle.x + game.obstacleWidth > -30
       );
+
+      const lastObstacle = game.obstacles[game.obstacles.length - 1];
+      if (!lastObstacle || lastObstacle.x <= game.width - game.obstacleSpacing) {
+        const nextX = lastObstacle
+          ? lastObstacle.x + game.obstacleSpacing
+          : game.width + 40;
+        spawnObstacle(nextX);
+      }
 
       if (hasCollision()) {
         endGame();
