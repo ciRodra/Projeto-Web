@@ -138,6 +138,112 @@
     const planeImage = new Image();
     planeImage.src = "assets/aviao.png";
 
+    const audio = {
+      context: null,
+      engineGain: null,
+      engineOscillators: [],
+
+      startContext() {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContext) {
+          return;
+        }
+
+        if (!this.context) {
+          this.context = new AudioContext();
+        }
+
+        if (this.context.state === "suspended") {
+          this.context.resume();
+        }
+      },
+
+      playTone(frequency, duration, type, volume, endFrequency) {
+        if (!this.context) {
+          return;
+        }
+
+        const now = this.context.currentTime;
+        const oscillator = this.context.createOscillator();
+        const gain = this.context.createGain();
+
+        oscillator.type = type;
+        oscillator.frequency.setValueAtTime(frequency, now);
+        if (endFrequency) {
+          oscillator.frequency.exponentialRampToValueAtTime(endFrequency, now + duration);
+        }
+
+        gain.gain.setValueAtTime(0.001, now);
+        gain.gain.exponentialRampToValueAtTime(volume, now + 0.025);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+
+        oscillator.connect(gain);
+        gain.connect(this.context.destination);
+        oscillator.start(now);
+        oscillator.stop(now + duration + 0.02);
+      },
+
+      playStart() {
+        this.startContext();
+        this.playTone(120, 0.42, "sawtooth", 0.08, 260);
+        window.setTimeout(() => this.playTone(220, 0.24, "triangle", 0.05, 360), 130);
+      },
+
+      startEngine() {
+        if (!this.context || this.engineGain) {
+          return;
+        }
+
+        const now = this.context.currentTime;
+        const low = this.context.createOscillator();
+        const high = this.context.createOscillator();
+        const gain = this.context.createGain();
+
+        low.type = "sawtooth";
+        high.type = "triangle";
+        low.frequency.setValueAtTime(72, now);
+        high.frequency.setValueAtTime(118, now);
+        gain.gain.setValueAtTime(0.001, now);
+        gain.gain.exponentialRampToValueAtTime(0.035, now + 0.35);
+
+        low.connect(gain);
+        high.connect(gain);
+        gain.connect(this.context.destination);
+        low.start(now);
+        high.start(now);
+
+        this.engineGain = gain;
+        this.engineOscillators = [low, high];
+      },
+
+      stopEngine() {
+        if (!this.context || !this.engineGain) {
+          return;
+        }
+
+        const now = this.context.currentTime;
+        this.engineGain.gain.cancelScheduledValues(now);
+        this.engineGain.gain.setValueAtTime(this.engineGain.gain.value || 0.001, now);
+        this.engineGain.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
+
+        this.engineOscillators.forEach((oscillator) => {
+          oscillator.stop(now + 0.2);
+        });
+
+        this.engineGain = null;
+        this.engineOscillators = [];
+      },
+
+      playJump() {
+        this.playTone(390, 0.16, "triangle", 0.045, 620);
+      },
+
+      playCrash() {
+        this.playTone(95, 0.38, "square", 0.12, 38);
+        window.setTimeout(() => this.playTone(55, 0.28, "sawtooth", 0.08, 28), 80);
+      }
+    };
+
     const game = {
       width: canvas.width,
       height: canvas.height,
@@ -164,6 +270,9 @@
     };
 
     function resetGame() {
+      audio.playStart();
+      audio.stopEngine();
+      audio.startEngine();
       game.state = "running";
       game.lastTime = 0;
       game.score = 0;
@@ -191,6 +300,7 @@
       }
 
       game.plane.velocity = game.jumpVelocity;
+      audio.playJump();
     }
 
     function spawnObstacle(xPosition) {
@@ -279,6 +389,8 @@
       game.state = "dead";
       finalScore.textContent = game.score;
       deathOverlay.classList.add("is-visible");
+      audio.stopEngine();
+      audio.playCrash();
     }
 
     function loop(timestamp) {
@@ -300,8 +412,8 @@
 
     function draw() {
       drawSky();
-      drawRunway();
       game.obstacles.forEach(drawObstacle);
+      drawRunway();
       drawPlane();
       drawGlassShine();
     }
@@ -371,12 +483,17 @@
 
       ctx.strokeStyle = "rgba(255,255,255,0.24)";
       ctx.lineWidth = 2;
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(x, y, width, height);
+      ctx.clip();
       for (let stripeY = y + 28; stripeY < y + height; stripeY += 62) {
         ctx.beginPath();
         ctx.moveTo(x + 12, stripeY);
         ctx.lineTo(x + width - 12, stripeY + 32);
         ctx.stroke();
       }
+      ctx.restore();
 
       const capHeight = 24;
       const capY = inverted ? y + height - capHeight : y;
