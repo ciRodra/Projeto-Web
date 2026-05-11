@@ -164,16 +164,6 @@ nav a:hover {
   margin-bottom: 18px;
 }
 
-.game-kicker {
-  display: inline-block;
-  color: #fff6d8;
-  font-family: Georgia, serif;
-  font-size: 13px;
-  font-weight: bold;
-  letter-spacing: 0;
-  text-shadow: 0 2px 3px rgba(0, 0, 0, 0.55);
-}
-
 h1 {
   display: inline-block;
   max-width: 100%;
