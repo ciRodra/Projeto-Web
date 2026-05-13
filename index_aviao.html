@@ -774,21 +774,21 @@
       ctx.clip();
 
       const night = game.nightLevel;
-      const windowColor = night > 0.35 ? "#ffd96a" : "#d7f1ff";
-      const windowGlow = night > 0.35 ? "rgba(255, 217, 106, 0.28)" : "rgba(255, 255, 255, 0.08)";
+      const windowColors = night > 0.35
+        ? ["#ffe071", "#ffd15f", "#fff0a8"]
+        : ["#d7f1ff", "#bfe4ff", "#f2fbff"];
+      const windowGlow = night > 0.35 ? "rgba(255, 217, 106, 0.24)" : "rgba(255, 255, 255, 0.08)";
       const windowWidth = 11;
       const windowHeight = 14;
       const gapX = 12;
       const gapY = 22;
 
-      for (let rowY = y + 18; rowY < y + height - 12; rowY += gapY) {
-        for (let colX = x + 13; colX < x + width - 12; colX += gapX + windowWidth) {
-          const lit = ((Math.floor(rowY + colX) / 7) % 3) > 0.8;
-
-          ctx.fillStyle = lit ? windowColor : "rgba(7, 11, 25, 0.42)";
+      for (let rowIndex = 0, rowY = y + 18; rowY < y + height - 12; rowIndex += 1, rowY += gapY) {
+        for (let colIndex = 0, colX = x + 13; colX < x + width - 12; colIndex += 1, colX += gapX + windowWidth) {
+          ctx.fillStyle = windowColors[(rowIndex + colIndex) % windowColors.length];
           ctx.fillRect(colX, rowY, windowWidth, windowHeight);
 
-          if (lit && night > 0.35) {
+          if (night > 0.35) {
             ctx.fillStyle = windowGlow;
             ctx.fillRect(colX - 2, rowY - 2, windowWidth + 4, windowHeight + 4);
           }
