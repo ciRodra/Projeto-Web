@@ -51,9 +51,13 @@
       <div class="game-frame">
         <canvas id="gameCanvas" width="960" height="540" aria-label="Área jogável"></canvas>
 
-        <button class="fullscreen-button" id="fullscreenButton" type="button" aria-label="Ativar tela cheia">
+        <div class="game-hud" aria-live="polite">
+          <span>Pontos</span>
+          <strong id="scoreTextFullscreen">0</strong>
+        </div>
+
+        <button class="fullscreen-button" id="fullscreenButton" type="button" aria-label="Ativar tela cheia" title="Tela cheia">
           <i class="fas fa-expand"></i>
-          <span>Tela cheia</span>
         </button>
 
         <div class="game-overlay is-visible" id="startOverlay">
@@ -141,6 +145,7 @@
       startButton: document.getElementById("startButton"),
       restartButton: document.getElementById("restartButton"),
       scoreText: document.getElementById("scoreText"),
+      scoreTextFullscreen: document.getElementById("scoreTextFullscreen"),
       finalScore: document.getElementById("finalScore"),
       gameFrame: document.querySelector(".game-frame"),
       fullscreenButton: document.getElementById("fullscreenButton")
@@ -364,6 +369,7 @@
     function updateScore(nextScore) {
       game.score = nextScore;
       elements.scoreText.textContent = String(nextScore);
+      elements.scoreTextFullscreen.textContent = String(nextScore);
     }
 
     function getFullscreenElement() {
@@ -397,10 +403,9 @@
     function updateFullscreenButton() {
       const isFullscreen = getFullscreenElement() === elements.gameFrame;
       const icon = elements.fullscreenButton.querySelector("i");
-      const label = elements.fullscreenButton.querySelector("span");
 
       icon.className = isFullscreen ? "fas fa-compress" : "fas fa-expand";
-      label.textContent = isFullscreen ? "Sair" : "Tela cheia";
+      elements.fullscreenButton.title = isFullscreen ? "Sair da tela cheia" : "Tela cheia";
       elements.fullscreenButton.setAttribute(
         "aria-label",
         isFullscreen ? "Sair da tela cheia" : "Ativar tela cheia"

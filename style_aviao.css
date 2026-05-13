@@ -243,28 +243,55 @@ canvas {
   display: block;
 }
 
+.game-hud {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  z-index: 4;
+  min-width: 74px;
+  color: #000000;
+  background: rgba(255, 255, 255, 0.86);
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 6px;
+  padding: 6px 10px;
+  text-align: center;
+  box-shadow:
+    0 3px 8px rgba(0, 0, 0, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+
+.game-hud span {
+  display: block;
+  font-size: 10px;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.game-hud strong {
+  display: block;
+  font-family: Georgia, serif;
+  font-size: 22px;
+  line-height: 1;
+}
+
 .fullscreen-button {
   position: absolute;
   top: 14px;
   right: 14px;
   z-index: 4;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.55);
-  color: #ffffff;
-  font-family: Georgia, serif;
-  font-size: 14px;
-  font-weight: bold;
-  background: linear-gradient(135deg, #35d85d 0%, #1e9e3f 100%);
-  padding: 8px 12px;
-  border-radius: 6px;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid rgba(0, 0, 0, 0.18);
+  color: #111111;
+  font-size: 15px;
+  background: rgba(255, 255, 255, 0.82);
+  border-radius: 50%;
   cursor: pointer;
-  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.25);
   box-shadow:
-    0 4px 8px rgba(0, 0, 0, 0.35),
-    inset 0 1px 0 rgba(255, 255, 255, 0.35),
-    inset 0 -2px 5px rgba(0, 0, 0, 0.22);
+    0 3px 8px rgba(0, 0, 0, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.7);
   transition:
     transform 0.2s ease,
     background 0.2s ease,
@@ -272,7 +299,7 @@ canvas {
 }
 
 .fullscreen-button:hover {
-  background: linear-gradient(135deg, #40e86a 0%, #28b64c 100%);
+  background: rgba(255, 255, 255, 0.96);
   transform: translateY(-1px);
 }
 
@@ -281,7 +308,8 @@ canvas {
 }
 
 .fullscreen-button.fullscreen-error {
-  background: linear-gradient(135deg, #d33 0%, #8f0000 100%);
+  color: #ffffff;
+  background: rgba(155, 0, 0, 0.9);
 }
 
 .game-frame:fullscreen {
@@ -535,9 +563,20 @@ canvas {
   .fullscreen-button {
     top: 10px;
     right: 10px;
-    gap: 6px;
-    font-size: 12px;
-    padding: 7px 9px;
+    width: 32px;
+    height: 32px;
+    font-size: 13px;
+  }
+
+  .game-hud {
+    top: 10px;
+    left: 10px;
+    min-width: 66px;
+    padding: 5px 8px;
+  }
+
+  .game-hud strong {
+    font-size: 19px;
   }
 
   .overlay-panel {
