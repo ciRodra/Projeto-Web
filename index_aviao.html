@@ -167,6 +167,7 @@
       planeHeight: 58,
       nightStartScore: 15,
       dayReturnScore: 25,
+      buildingStartScore: 20,
       maxDelta: 0.033
     };
 
@@ -689,6 +690,12 @@
       const bottomY = obstacle.gapY + CONFIG.gapHeight;
       const bottomHeight = CONFIG.height - CONFIG.runwayHeight - bottomY;
 
+      if (game.score >= CONFIG.buildingStartScore) {
+        drawBuilding(obstacle.x, 0, CONFIG.obstacleWidth, topHeight, true);
+        drawBuilding(obstacle.x, bottomY, CONFIG.obstacleWidth, bottomHeight, false);
+        return;
+      }
+
       drawTower(obstacle.x, 0, CONFIG.obstacleWidth, topHeight, true);
       drawTower(obstacle.x, bottomY, CONFIG.obstacleWidth, bottomHeight, false);
     }
@@ -738,6 +745,74 @@
       ctx.strokeStyle = "rgba(0,0,0,0.45)";
       ctx.lineWidth = 3;
       ctx.strokeRect(x - 9, capY, width + 18, capHeight);
+    }
+
+    function drawBuilding(x, y, width, height, inverted) {
+      if (height <= 0) {
+        return;
+      }
+
+      const body = ctx.createLinearGradient(x, y, x + width, y);
+      body.addColorStop(0, "#20263a");
+      body.addColorStop(0.48, "#59627f");
+      body.addColorStop(1, "#171b2a");
+
+      ctx.fillStyle = body;
+      ctx.fillRect(x, y, width, height);
+
+      ctx.fillStyle = "rgba(255, 255, 255, 0.08)";
+      ctx.fillRect(x + 8, y, 16, height);
+
+      drawBuildingWindows(x, y, width, height);
+      drawBuildingEdge(x, y, width, height, inverted);
+    }
+
+    function drawBuildingWindows(x, y, width, height) {
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(x, y, width, height);
+      ctx.clip();
+
+      const night = game.nightLevel;
+      const windowColor = night > 0.35 ? "#ffd96a" : "#d7f1ff";
+      const windowGlow = night > 0.35 ? "rgba(255, 217, 106, 0.28)" : "rgba(255, 255, 255, 0.08)";
+      const windowWidth = 11;
+      const windowHeight = 14;
+      const gapX = 12;
+      const gapY = 22;
+
+      for (let rowY = y + 18; rowY < y + height - 12; rowY += gapY) {
+        for (let colX = x + 13; colX < x + width - 12; colX += gapX + windowWidth) {
+          const lit = ((Math.floor(rowY + colX) / 7) % 3) > 0.8;
+
+          ctx.fillStyle = lit ? windowColor : "rgba(7, 11, 25, 0.42)";
+          ctx.fillRect(colX, rowY, windowWidth, windowHeight);
+
+          if (lit && night > 0.35) {
+            ctx.fillStyle = windowGlow;
+            ctx.fillRect(colX - 2, rowY - 2, windowWidth + 4, windowHeight + 4);
+          }
+        }
+      }
+
+      ctx.restore();
+    }
+
+    function drawBuildingEdge(x, y, width, height, inverted) {
+      const edgeHeight = 18;
+      const edgeY = inverted ? y + height - edgeHeight : y;
+
+      ctx.fillStyle = "#101522";
+      ctx.fillRect(x - 5, edgeY, width + 10, edgeHeight);
+
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.2)";
+      ctx.lineWidth = 2;
+      ctx.strokeRect(x - 5, edgeY, width + 10, edgeHeight);
+
+      if (!inverted) {
+        ctx.fillStyle = "#101522";
+        ctx.fillRect(x + width * 0.42, y - 18, 8, 18);
+      }
     }
 
     function drawPlane() {
