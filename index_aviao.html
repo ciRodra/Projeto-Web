@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BDN.GAMES | Jogo do Avião</title>
+  <link rel="stylesheet" href="style_aviao.css">
+  <link rel="stylesheet"
+ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+
+  <header>
+    <div class="topo">
+
+      <a class="logo" href="index.html">BDN.GAMES</a>
+
+      <div class="header-right">
+        <div class="info">
+          <span id="playerCount">4523 jogadores nas salas</span>
+          <div class="linha"></div>
+        </div>
+
+        <nav>
+          <a href="index.html">Jogos</a>
+          <a href="off.html">Meu Perfil</a>
+          <a href="off.html">Desenvolvedores</a>
+        </nav>
+      </div>
+
+      <div class="botoes-auth" id="area-login">
+        <a href="#" class="btn-login" onclick="abrirModal()">Login</a>
+        <a href="cadastro.html" class="btn-cadastro">Cadastre-se</a>
+      </div>
+
+    </div>
+  </header>
+
+  <main class="game-page">
+    <section class="game-shell" aria-label="Jogo do avião">
+      <div class="game-header">
+        <div>
+          <h1>Aviãozinho</h1>
+        </div>
+        <div class="score-board" aria-live="polite">
+          <span>Pontos</span>
+          <strong id="scoreText">0</strong>
+        </div>
+      </div>
+
+      <div class="game-frame">
+        <canvas id="gameCanvas" width="960" height="540" aria-label="Área jogável"></canvas>
+
+        <div class="game-overlay is-visible" id="startOverlay">
+          <div class="overlay-panel">
+            <h2>Pronto para decolar?</h2>
+            <p>Céu aberto, motores prontos.</p>
+            <button class="game-button" id="startButton" type="button">Iniciar</button>
+          </div>
+        </div>
+
+        <div class="game-overlay" id="deathOverlay">
+          <div class="overlay-panel">
+            <h2>Fim de voo</h2>
+            <p>Sua pontuação foi <strong id="finalScore">0</strong>.</p>
+            <button class="game-button" id="restartButton" type="button">Reiniciar</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="modal-login" class="modal">
+    <div class="modal-conteudo">
+      <span class="fechar" onclick="fecharModal()">&times;</span>
+      <h2>Login</h2>
+      <input type="text" id="login-user" placeholder="Usuário">
+      <input type="password" id="login-senha" placeholder="Senha">
+      <button class="entrar" onclick="login()">Entrar</button>
+      <p id="mensagem-login"></p>
+    </div>
+  </div>
+
+  <script>
+    let currentPlayers = 4523;
+    let isIncreasing = true;
+
+    function updatePlayerCount() {
+      if (isIncreasing) {
+        currentPlayers += Math.floor(Math.random() * 10) + 1;
+        if (currentPlayers > 10000) {
+          isIncreasing = false;
+        }
+      } else {
+        currentPlayers -= Math.floor(Math.random() * 8) + 1;
+        if (currentPlayers < 3000) {
+          isIncreasing = true;
+        }
+      }
+
+      document.getElementById('playerCount').textContent =
+        currentPlayers + ' jogadores nas salas';
+    }
+
+    setInterval(updatePlayerCount, 2000);
+
+    function abrirModal() {
+      document.getElementById("modal-login").style.display = "flex";
+    }
+
+    function fecharModal() {
+      document.getElementById("modal-login").style.display = "none";
+    }
+
+    function login() {
+      const usuario = document.getElementById("login-user").value;
+      const senha = document.getElementById("login-senha").value;
+      const usuarioSalvo = localStorage.getItem("usuario");
+      const senhaSalva = localStorage.getItem("senha");
+
+      if (usuario === usuarioSalvo && senha === senhaSalva) {
+        document.getElementById("mensagem-login").innerHTML = "Login realizado!";
+        document.getElementById("area-login").style.display = "none";
+        fecharModal();
+      } else {
+        document.getElementById("mensagem-login").innerHTML =
+          "Usuário ou senha incorretos!";
+      }
+    }
+
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+    const elements = {
+      startOverlay: document.getElementById("startOverlay"),
+      deathOverlay: document.getElementById("deathOverlay"),
+      startButton: document.getElementById("startButton"),
+      restartButton: document.getElementById("restartButton"),
+      scoreText: document.getElementById("scoreText"),
+      finalScore: document.getElementById("finalScore")
+    };
+
+    const CONFIG = {
+      width: canvas.width,
+      height: canvas.height,
+      runwayHeight: 62,
+      gravity: 1450,
+      jumpVelocity: -470,
+      obstacleSpeed: 285,
+      obstacleSpacing: 330,
+      obstacleWidth: 94,
+      gapHeight: 190,
+      planeStartX: 190,
+      planeStartY: 250,
+      planeWidth: 86,
+      planeHeight: 58,
+      nightStartScore: 15,
+      dayReturnScore: 25,
+      maxDelta: 0.033
+    };
+
+    const COLORS = {
+      runwayStripeDay: "#f5d14f",
+      runwayStripeNight: "#ffe071",
+      towerRed: ["#7c1010", "#d64334", "#9b0000", "#560808", "#2a0303"],
+      metalCap: ["#f0f0f0", "#b8b8b8", "#666666"]
+    };
+
+    const planeImage = new Image();
+    planeImage.src = "assets/aviao.png";
+
+    const clouds = [
+      { x: 120, y: 86, scale: 1.05, speed: 0.12, wrap: 1120 },
+      { x: 520, y: 148, scale: 0.72, speed: 0.09, wrap: 1180 },
+      { x: 900, y: 72, scale: 0.88, speed: 0.1, wrap: 1200 }
+    ];
+
+    const stars = Array.from({ length: 64 }, (_, index) => ({
+      x: (index * 149) % CONFIG.width,
+      y: 28 + ((index * 67) % 240),
+      size: 1 + (index % 3) * 0.55,
+      alpha: 0.38 + (index % 5) * 0.12
+    }));
+
+    const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
+    const wrapLeft = (base, distance, speed, wrap) => base - (distance * speed) % wrap;
+    const setOverlay = (element, isVisible) => {
+      element.classList.toggle("is-visible", isVisible);
+    };
+
+    const audio = {
+      context: null,
+      engineGain: null,
+      engineOscillators: [],
+
+      startContext() {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContext) {
+          return;
+        }
+
+        if (!this.context) {
+          this.context = new AudioContext();
+        }
+
+        if (this.context.state === "suspended") {
+          this.context.resume();
+        }
+      },
+
+      playTone(frequency, duration, type, volume, endFrequency) {
+        if (!this.context) {
+          return;
+        }
+
+        const now = this.context.currentTime;
+        const oscillator = this.context.createOscillator();
+        const gain = this.context.createGain();
+
+        oscillator.type = type;
+        oscillator.frequency.setValueAtTime(frequency, now);
+        if (endFrequency) {
+          oscillator.frequency.exponentialRampToValueAtTime(endFrequency, now + duration);
+        }
+
+        gain.gain.setValueAtTime(0.001, now);
+        gain.gain.exponentialRampToValueAtTime(volume, now + 0.025);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+
+        oscillator.connect(gain);
+        gain.connect(this.context.destination);
+        oscillator.start(now);
+        oscillator.stop(now + duration + 0.02);
+      },
+
+      playStart() {
+        this.startContext();
+        this.playTone(120, 0.42, "sawtooth", 0.08, 260);
+        window.setTimeout(() => this.playTone(220, 0.24, "triangle", 0.05, 360), 130);
+      },
+
+      startEngine() {
+        if (!this.context || this.engineGain) {
+          return;
+        }
+
+        const now = this.context.currentTime;
+        const low = this.context.createOscillator();
+        const high = this.context.createOscillator();
+        const gain = this.context.createGain();
+
+        low.type = "sawtooth";
+        high.type = "triangle";
+        low.frequency.setValueAtTime(72, now);
+        high.frequency.setValueAtTime(118, now);
+        gain.gain.setValueAtTime(0.001, now);
+        gain.gain.exponentialRampToValueAtTime(0.035, now + 0.35);
+
+        low.connect(gain);
+        high.connect(gain);
+        gain.connect(this.context.destination);
+        low.start(now);
+        high.start(now);
+
+        this.engineGain = gain;
+        this.engineOscillators = [low, high];
+      },
+
+      stopEngine() {
+        if (!this.context || !this.engineGain) {
+          return;
+        }
+
+        const now = this.context.currentTime;
+        this.engineGain.gain.cancelScheduledValues(now);
+        this.engineGain.gain.setValueAtTime(this.engineGain.gain.value || 0.001, now);
+        this.engineGain.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
+        this.engineOscillators.forEach((oscillator) => oscillator.stop(now + 0.2));
+        this.engineGain = null;
+        this.engineOscillators = [];
+      },
+
+      playJump() {
+        this.playTone(390, 0.16, "triangle", 0.045, 620);
+      },
+
+      playScore() {
+        this.playTone(660, 0.12, "triangle", 0.04, 880);
+        window.setTimeout(() => this.playTone(990, 0.1, "sine", 0.03, 1180), 70);
+      },
+
+      playCrash() {
+        this.playTone(95, 0.38, "square", 0.12, 38);
+        window.setTimeout(() => this.playTone(55, 0.28, "sawtooth", 0.08, 28), 80);
+      }
+    };
+
+    const game = {
+      state: "idle",
+      frameId: null,
+      lastTime: 0,
+      score: 0,
+      distance: 0,
+      groundOffset: 0,
+      nightLevel: 0,
+      plane: {
+        x: CONFIG.planeStartX,
+        y: CONFIG.planeStartY,
+        width: CONFIG.planeWidth,
+        height: CONFIG.planeHeight,
+        velocity: 0,
+        rotation: 0
+      },
+      obstacles: []
+    };
+
+    function resetGame() {
+      if (game.frameId) {
+        cancelAnimationFrame(game.frameId);
+      }
+
+      audio.playStart();
+      audio.stopEngine();
+      audio.startEngine();
+
+      game.state = "running";
+      game.lastTime = 0;
+      game.score = 0;
+      game.distance = 0;
+      game.groundOffset = 0;
+      game.nightLevel = 0;
+      game.obstacles = [];
+      game.plane.y = CONFIG.planeStartY;
+      game.plane.velocity = CONFIG.jumpVelocity * 0.75;
+      game.plane.rotation = 0;
+
+      updateScore(0);
+      setOverlay(elements.startOverlay, false);
+      setOverlay(elements.deathOverlay, false);
+      spawnObstacle(CONFIG.width + 40);
+      game.frameId = requestAnimationFrame(loop);
+    }
+
+    function flap() {
+      if (game.state === "idle") {
+        resetGame();
+        return;
+      }
+
+      if (game.state !== "running") {
+        return;
+      }
+
+      game.plane.velocity = CONFIG.jumpVelocity;
+      audio.playJump();
+    }
+
+    function updateScore(nextScore) {
+      game.score = nextScore;
+      elements.scoreText.textContent = String(nextScore);
+    }
+
+    function spawnObstacle(xPosition) {
+      const runwayTop = CONFIG.height - CONFIG.runwayHeight;
+      const minCenter = 86 + CONFIG.gapHeight / 2;
+      const maxCenter = runwayTop - 34 - CONFIG.gapHeight / 2;
+      const wave = Math.sin((game.distance + xPosition) / 210) * 48;
+      const randomDrift = (Math.random() - 0.5) * 110;
+      const center = clamp(CONFIG.height / 2 + wave + randomDrift, minCenter, maxCenter);
+
+      game.obstacles.push({
+        x: xPosition,
+        gapY: center - CONFIG.gapHeight / 2,
+        passed: false
+      });
+    }
+
+    function update(delta) {
+      game.distance += CONFIG.obstacleSpeed * delta;
+      game.groundOffset = (game.groundOffset + CONFIG.obstacleSpeed * delta) % 80;
+      updatePlane(delta);
+      updateEnvironment(delta);
+      updateObstacles(delta);
+
+      if (hasCollision()) {
+        endGame();
+      }
+    }
+
+    function updatePlane(delta) {
+      game.plane.velocity += CONFIG.gravity * delta;
+      game.plane.y += game.plane.velocity * delta;
+      game.plane.rotation = clamp(game.plane.velocity / 760, -0.45, 0.75);
+    }
+
+    function updateEnvironment(delta) {
+      const targetNight =
+        game.score >= CONFIG.nightStartScore && game.score < CONFIG.dayReturnScore ? 1 : 0;
+      game.nightLevel += (targetNight - game.nightLevel) * Math.min(delta * 1.65, 1);
+    }
+
+    function updateObstacles(delta) {
+      const planeX = game.plane.x;
+
+      game.obstacles.forEach((obstacle) => {
+        obstacle.x -= CONFIG.obstacleSpeed * delta;
+
+        if (!obstacle.passed && obstacle.x + CONFIG.obstacleWidth < planeX) {
+          obstacle.passed = true;
+          updateScore(game.score + 1);
+          audio.playScore();
+        }
+      });
+
+      game.obstacles = game.obstacles.filter(
+        (obstacle) => obstacle.x + CONFIG.obstacleWidth > -30
+      );
+
+      let lastObstacle = game.obstacles[game.obstacles.length - 1];
+      while (!lastObstacle || lastObstacle.x <= CONFIG.width - CONFIG.obstacleSpacing) {
+        const nextX = lastObstacle
+          ? lastObstacle.x + CONFIG.obstacleSpacing
+          : CONFIG.width + 40;
+        spawnObstacle(nextX);
+        lastObstacle = game.obstacles[game.obstacles.length - 1];
+      }
+    }
+
+    function hasCollision() {
+      const padding = 12;
+      const runwayTop = CONFIG.height - CONFIG.runwayHeight;
+      const planeBox = {
+        left: game.plane.x + padding,
+        right: game.plane.x + game.plane.width - padding,
+        top: game.plane.y + padding,
+        bottom: game.plane.y + game.plane.height - padding
+      };
+
+      if (planeBox.top < 0 || planeBox.bottom > runwayTop) {
+        return true;
+      }
+
+      return game.obstacles.some((obstacle) => {
+        const obstacleLeft = obstacle.x;
+        const obstacleRight = obstacle.x + CONFIG.obstacleWidth;
+        const topObstacleBottom = obstacle.gapY;
+        const bottomObstacleTop = obstacle.gapY + CONFIG.gapHeight;
+        const intersectsX = planeBox.right > obstacleLeft && planeBox.left < obstacleRight;
+        return intersectsX && (
+          planeBox.top < topObstacleBottom || planeBox.bottom > bottomObstacleTop
+        );
+      });
+    }
+
+    function endGame() {
+      if (game.state === "dead") {
+        return;
+      }
+
+      game.state = "dead";
+      elements.finalScore.textContent = String(game.score);
+      setOverlay(elements.deathOverlay, true);
+      audio.stopEngine();
+      audio.playCrash();
+    }
+
+    function loop(timestamp) {
+      if (game.state !== "running") {
+        draw();
+        game.frameId = null;
+        return;
+      }
+
+      if (!game.lastTime) {
+        game.lastTime = timestamp;
+      }
+
+      const delta = Math.min((timestamp - game.lastTime) / 1000, CONFIG.maxDelta);
+      game.lastTime = timestamp;
+      update(delta);
+      draw();
+      game.frameId = requestAnimationFrame(loop);
+    }
+
+    function draw() {
+      drawSky();
+      game.obstacles.forEach(drawObstacle);
+      drawRunway();
+      drawPlane();
+      drawGlassShine();
+    }
+
+    function drawSky() {
+      const night = game.nightLevel;
+      const sky = ctx.createLinearGradient(0, 0, 0, CONFIG.height);
+      sky.addColorStop(0, "#7fc7ff");
+      sky.addColorStop(0.62, "#d7f1ff");
+      sky.addColorStop(1, "#eef8ff");
+      ctx.fillStyle = sky;
+      ctx.fillRect(0, 0, CONFIG.width, CONFIG.height);
+
+      drawSun(night);
+      drawClouds(night);
+
+      if (night > 0.01) {
+        drawNightLayer(night);
+      }
+    }
+
+    function drawSun(night) {
+      const sunAlpha = 1 - night;
+      if (sunAlpha <= 0.01) {
+        return;
+      }
+
+      ctx.save();
+      ctx.globalAlpha = sunAlpha;
+      const sunGlow = ctx.createRadialGradient(790, 92, 12, 790, 92, 84);
+      sunGlow.addColorStop(0, "rgba(255, 244, 164, 0.72)");
+      sunGlow.addColorStop(1, "rgba(255, 244, 164, 0)");
+      ctx.fillStyle = sunGlow;
+      ctx.fillRect(700, 8, 180, 170);
+      ctx.fillStyle = "#f5d14f";
+      ctx.beginPath();
+      ctx.arc(790, 92, 28, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+
+    function drawClouds(night) {
+      ctx.fillStyle = `rgba(255, 255, 255, ${0.72 - night * 0.44})`;
+      clouds.forEach((cloud) => {
+        drawCloud(wrapLeft(cloud.x, game.distance, cloud.speed, cloud.wrap), cloud.y, cloud.scale);
+      });
+    }
+
+    function drawNightLayer(night) {
+      const nightSky = ctx.createLinearGradient(0, 0, 0, CONFIG.height);
+      nightSky.addColorStop(0, `rgba(7, 11, 34, ${0.86 * night})`);
+      nightSky.addColorStop(0.65, `rgba(12, 23, 52, ${0.72 * night})`);
+      nightSky.addColorStop(1, `rgba(8, 13, 26, ${0.46 * night})`);
+      ctx.fillStyle = nightSky;
+      ctx.fillRect(0, 0, CONFIG.width, CONFIG.height);
+      drawStars(night);
+      drawMoon(night);
+    }
+
+    function drawMoon(night) {
+      ctx.save();
+      ctx.globalAlpha = night;
+      const moonGlow = ctx.createRadialGradient(794, 90, 10, 794, 90, 74);
+      moonGlow.addColorStop(0, "rgba(238, 243, 255, 0.52)");
+      moonGlow.addColorStop(1, "rgba(238, 243, 255, 0)");
+      ctx.fillStyle = moonGlow;
+      ctx.fillRect(715, 15, 160, 150);
+      ctx.fillStyle = "#eef3ff";
+      ctx.beginPath();
+      ctx.arc(794, 90, 25, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "rgba(7, 11, 34, 0.42)";
+      ctx.beginPath();
+      ctx.arc(806, 82, 25, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+
+    function drawStars(night) {
+      ctx.save();
+      stars.forEach((star) => {
+        const twinkle = 0.75 + Math.sin(game.distance * 0.012 + star.x) * 0.25;
+        ctx.fillStyle = `rgba(255, 255, 255, ${star.alpha * night * twinkle})`;
+        ctx.fillRect(star.x, star.y, star.size, star.size);
+      });
+      ctx.restore();
+    }
+
+    function drawCloud(x, y, scale) {
+      ctx.beginPath();
+      ctx.ellipse(x, y + 22 * scale, 46 * scale, 20 * scale, 0, 0, Math.PI * 2);
+      ctx.ellipse(x + 38 * scale, y + 12 * scale, 42 * scale, 26 * scale, 0, 0, Math.PI * 2);
+      ctx.ellipse(x + 78 * scale, y + 24 * scale, 52 * scale, 21 * scale, 0, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    function drawRunway() {
+      const night = game.nightLevel;
+      const runwayY = CONFIG.height - CONFIG.runwayHeight;
+      const ground = ctx.createLinearGradient(0, runwayY, 0, CONFIG.height);
+      ground.addColorStop(0, "#4c4f50");
+      ground.addColorStop(1, "#171819");
+      ctx.fillStyle = ground;
+      ctx.fillRect(0, runwayY, CONFIG.width, CONFIG.runwayHeight);
+
+      ctx.fillStyle = night > 0.5 ? COLORS.runwayStripeNight : COLORS.runwayStripeDay;
+      for (let x = -game.groundOffset; x < CONFIG.width; x += 80) {
+        ctx.fillRect(x + 18, runwayY + 28, 42, 6);
+      }
+
+      if (night > 0.01) {
+        drawRunwayLights(runwayY, night);
+      }
+
+      ctx.fillStyle = "rgba(255,255,255,0.22)";
+      ctx.fillRect(0, runwayY + 4, CONFIG.width, 3);
+    }
+
+    function drawRunwayLights(runwayY, night) {
+      ctx.save();
+      ctx.globalAlpha = night;
+      for (let x = 28 - game.groundOffset; x < CONFIG.width; x += 80) {
+        const light = ctx.createRadialGradient(x, runwayY + 13, 2, x, runwayY + 13, 18);
+        light.addColorStop(0, "rgba(255, 226, 98, 0.92)");
+        light.addColorStop(1, "rgba(255, 226, 98, 0)");
+        ctx.fillStyle = light;
+        ctx.fillRect(x - 20, runwayY - 5, 40, 36);
+      }
+      ctx.restore();
+    }
+
+    function drawObstacle(obstacle) {
+      const topHeight = obstacle.gapY;
+      const bottomY = obstacle.gapY + CONFIG.gapHeight;
+      const bottomHeight = CONFIG.height - CONFIG.runwayHeight - bottomY;
+
+      drawTower(obstacle.x, 0, CONFIG.obstacleWidth, topHeight, true);
+      drawTower(obstacle.x, bottomY, CONFIG.obstacleWidth, bottomHeight, false);
+    }
+
+    function drawTower(x, y, width, height, inverted) {
+      if (height <= 0) {
+        return;
+      }
+
+      const tower = ctx.createLinearGradient(x, y, x + width, y);
+      COLORS.towerRed.forEach((color, index) => {
+        tower.addColorStop(index / (COLORS.towerRed.length - 1), color);
+      });
+
+      ctx.fillStyle = tower;
+      ctx.fillRect(x, y, width, height);
+      drawTowerStripes(x, y, width, height);
+      drawTowerCap(x, y, width, height, inverted);
+    }
+
+    function drawTowerStripes(x, y, width, height) {
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(x, y, width, height);
+      ctx.clip();
+      ctx.strokeStyle = "rgba(255,255,255,0.24)";
+      ctx.lineWidth = 2;
+      for (let stripeY = y + 28; stripeY < y + height; stripeY += 62) {
+        ctx.beginPath();
+        ctx.moveTo(x + 12, stripeY);
+        ctx.lineTo(x + width - 12, stripeY + 32);
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+
+    function drawTowerCap(x, y, width, height, inverted) {
+      const capHeight = 24;
+      const capY = inverted ? y + height - capHeight : y;
+      const cap = ctx.createLinearGradient(x, capY, x, capY + capHeight);
+      COLORS.metalCap.forEach((color, index) => {
+        cap.addColorStop(index / (COLORS.metalCap.length - 1), color);
+      });
+
+      ctx.fillStyle = cap;
+      ctx.fillRect(x - 9, capY, width + 18, capHeight);
+      ctx.strokeStyle = "rgba(0,0,0,0.45)";
+      ctx.lineWidth = 3;
+      ctx.strokeRect(x - 9, capY, width + 18, capHeight);
+    }
+
+    function drawPlane() {
+      const plane = game.plane;
+
+      ctx.save();
+      ctx.translate(plane.x + plane.width / 2, plane.y + plane.height / 2);
+      ctx.rotate(plane.rotation);
+      ctx.shadowColor = "rgba(0,0,0,0.35)";
+      ctx.shadowBlur = 16;
+      ctx.shadowOffsetY = 8;
+
+      if (planeImage.complete && planeImage.naturalWidth) {
+        ctx.scale(-1, 1);
+        ctx.drawImage(
+          planeImage,
+          -plane.width / 2,
+          -plane.height / 2,
+          plane.width,
+          plane.height
+        );
+      } else {
+        ctx.fillStyle = "#f0f0f0";
+        ctx.beginPath();
+        ctx.ellipse(0, 0, 42, 20, 0, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      ctx.restore();
+    }
+
+    function drawGlassShine() {
+      const night = game.nightLevel;
+      const shine = ctx.createLinearGradient(0, 0, CONFIG.width, CONFIG.height);
+      shine.addColorStop(0, `rgba(255,255,255,${0.28 - night * 0.12})`);
+      shine.addColorStop(0.34, "rgba(255,255,255,0.04)");
+      shine.addColorStop(1, `rgba(0,0,0,${0.08 + night * 0.16})`);
+      ctx.fillStyle = shine;
+      ctx.fillRect(0, 0, CONFIG.width, CONFIG.height);
+    }
+
+    elements.startButton.addEventListener("click", resetGame);
+    elements.restartButton.addEventListener("click", resetGame);
+    canvas.addEventListener("pointerdown", flap);
+
+    window.addEventListener("keydown", (event) => {
+      if (event.code === "Space" || event.code === "ArrowUp") {
+        event.preventDefault();
+        flap();
+      }
+    });
+
+    draw();
+  </script>
+  <footer class="rodape">
+
+  <div class="rodape-topo">
+
+    <div class="rodape-esquerda">
+
+      <h2 class="logo-rodape">BDN.GAMES</h2>
+
+      <nav class="rodape-links">
+
+        <a href="suporte.html">Suporte</a>
+        <span>|</span>
+
+        <a href="acordo.html">Acordo de Utilização</a>
+        <span>|</span>
+
+        <a href="privacidade.html">Política de Privacidade</a>
+        <span>|</span>
+
+        <a href="off.html">Contato</a>
+
+      </nav>
+
+    </div>
+
+    <div class="rodape-direita">
+
+      <span class="texto-redes">Siga-nos!</span>
+
+      <div class="redes">
+
+        <a href="#">
+          <i class="fab fa-facebook-f"></i>
+        </a>
+
+        <a href="#">
+          <i class="fab fa-twitter"></i>
+        </a>
+
+        <a href="#">
+          <i class="fab fa-instagram"></i>
+        </a>
+
+        <a href="#">
+          <i class="fab fa-youtube"></i>
+        </a>
+
+      </div>
+
+      <div class="selo-reclame">
+
+        <img src="assets/reclame-aqui.png" alt="Reclame Aqui">
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <div class="rodape-bottom">
+    <p>BDN.GAMES © Todos os direitos reservados</p>
+  </div>
+
+</footer>
+
+</body>
+</html>
