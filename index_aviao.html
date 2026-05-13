@@ -51,6 +51,11 @@
       <div class="game-frame">
         <canvas id="gameCanvas" width="960" height="540" aria-label="Área jogável"></canvas>
 
+        <button class="fullscreen-button" id="fullscreenButton" type="button" aria-label="Ativar tela cheia">
+          <i class="fas fa-expand"></i>
+          <span>Tela cheia</span>
+        </button>
+
         <div class="game-overlay is-visible" id="startOverlay">
           <div class="overlay-panel">
             <h2>Pronto para decolar?</h2>
@@ -136,7 +141,9 @@
       startButton: document.getElementById("startButton"),
       restartButton: document.getElementById("restartButton"),
       scoreText: document.getElementById("scoreText"),
-      finalScore: document.getElementById("finalScore")
+      finalScore: document.getElementById("finalScore"),
+      gameFrame: document.querySelector(".game-frame"),
+      fullscreenButton: document.getElementById("fullscreenButton")
     };
 
     const CONFIG = {
@@ -357,6 +364,62 @@
     function updateScore(nextScore) {
       game.score = nextScore;
       elements.scoreText.textContent = String(nextScore);
+    }
+
+    function getFullscreenElement() {
+      return document.fullscreenElement || document.webkitFullscreenElement;
+    }
+
+    function requestGameFullscreen() {
+      if (elements.gameFrame.requestFullscreen) {
+        return elements.gameFrame.requestFullscreen();
+      }
+
+      if (elements.gameFrame.webkitRequestFullscreen) {
+        return elements.gameFrame.webkitRequestFullscreen();
+      }
+
+      return Promise.reject();
+    }
+
+    function exitGameFullscreen() {
+      if (document.exitFullscreen) {
+        return document.exitFullscreen();
+      }
+
+      if (document.webkitExitFullscreen) {
+        return document.webkitExitFullscreen();
+      }
+
+      return Promise.reject();
+    }
+
+    function updateFullscreenButton() {
+      const isFullscreen = getFullscreenElement() === elements.gameFrame;
+      const icon = elements.fullscreenButton.querySelector("i");
+      const label = elements.fullscreenButton.querySelector("span");
+
+      icon.className = isFullscreen ? "fas fa-compress" : "fas fa-expand";
+      label.textContent = isFullscreen ? "Sair" : "Tela cheia";
+      elements.fullscreenButton.setAttribute(
+        "aria-label",
+        isFullscreen ? "Sair da tela cheia" : "Ativar tela cheia"
+      );
+    }
+
+    function toggleFullscreen() {
+      const fullscreenElement = getFullscreenElement();
+      const action = fullscreenElement ? exitGameFullscreen() : requestGameFullscreen();
+
+      Promise.resolve(action)
+        .then(updateFullscreenButton)
+        .catch(() => {
+          elements.fullscreenButton.classList.add("fullscreen-error");
+
+          window.setTimeout(() => {
+            elements.fullscreenButton.classList.remove("fullscreen-error");
+          }, 650);
+        });
     }
 
     function spawnObstacle(xPosition) {
@@ -713,6 +776,9 @@
 
     elements.startButton.addEventListener("click", resetGame);
     elements.restartButton.addEventListener("click", resetGame);
+    elements.fullscreenButton.addEventListener("click", toggleFullscreen);
+    document.addEventListener("fullscreenchange", updateFullscreenButton);
+    document.addEventListener("webkitfullscreenchange", updateFullscreenButton);
     canvas.addEventListener("pointerdown", flap);
 
     window.addEventListener("keydown", (event) => {
