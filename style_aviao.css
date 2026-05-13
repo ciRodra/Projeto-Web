@@ -248,6 +248,7 @@ canvas {
   top: 14px;
   left: 14px;
   z-index: 4;
+  display: none;
   min-width: 74px;
   color: #000000;
   background: rgba(255, 255, 255, 0.86);
@@ -258,6 +259,14 @@ canvas {
   box-shadow:
     0 3px 8px rgba(0, 0, 0, 0.22),
     inset 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+
+.game-frame:fullscreen .game-hud {
+  display: block;
+}
+
+.game-frame:-webkit-full-screen .game-hud {
+  display: block;
 }
 
 .game-hud span {
