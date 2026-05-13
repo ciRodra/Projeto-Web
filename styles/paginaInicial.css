@@ -440,7 +440,8 @@ main {
 
 .hub-painel,
 .hub-status,
-.hub-card {
+.hub-card,
+.creditos-box {
   background: linear-gradient(135deg, #ffffff 0%, #d0d0d0 100%);
   color: #000;
   border-radius: 5px;
@@ -478,7 +479,8 @@ main {
 
 .hub-painel p,
 .hub-status p,
-.hub-card p {
+.hub-card p,
+.creditos-box p {
   line-height: 1.45;
   font-size: 16px;
   overflow-wrap: anywhere;
@@ -668,6 +670,12 @@ main {
   max-height: 110px;
   object-fit: contain;
   justify-self: center;
+}
+
+.creditos-box {
+  padding: 24px;
+  display: grid;
+  gap: 10px;
 }
 
 .rodape {
@@ -911,7 +919,8 @@ main {
 
   .hub-painel,
   .hub-card,
-  .hub-status {
+  .hub-status,
+  .creditos-box {
     padding: 18px;
   }
 
@@ -1005,13 +1014,15 @@ main {
 
   .hub-painel,
   .hub-card,
-  .hub-status {
+  .hub-status,
+  .creditos-box {
     padding: 14px;
   }
 
   .hub-painel p,
   .hub-status p,
-  .hub-card p {
+  .hub-card p,
+  .creditos-box p {
     font-size: 15px;
   }
 
