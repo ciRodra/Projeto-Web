@@ -2,7 +2,8 @@
 <html lang="pt-br">
 <head>
   <meta charset="UTF-8">
-  <title>BDN.BET</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BDN.GAMES - Hub</title>
   <link rel="stylesheet" href="styles/paginaInicial.css">
 </head>
 <body>
@@ -10,7 +11,7 @@
   <header>
     <div class="topo">
 
-      <a class="logo" href="off.html">BDN.GAMES</a>
+      <a class="logo" href="#jogar-agora">BDN.GAMES</a>
 
       <div class="header-right">
         <div class="info">
@@ -19,111 +20,142 @@
         </div>
 
         <nav>
-          <a href="off.html">Jogos</a>
-          <a href="off.html">Meu Perfil</a>
-          <a href="off.html">Desenvolvedores</a>
+          <a href="#jogar-agora">Jogar</a>
+          <a href="#catalogo">Nossos Jogos</a>
         </nav>
       </div>
 
-      <div class="botoes-auth" id="area-login">
-        <a href="#" class="btn-login" onclick="abrirModal()">Login</a>
-        <a href="cadastro.html" class="btn-cadastro">Cadastre-se</a>
+      <div class="botoes-auth">
+        <a href="#jogar-agora" class="btn-login">Login</a>
+        <a href="#jogar-agora" class="btn-cadastro">Cadastro</a>
       </div>
 
     </div>
   </header>
 
-  <main>
-    <section class="conteudo">
+  <main class="hub-main">
+    <section class="conteudo hub" id="jogar-agora">
 
-      <h2>
-        Jogue On-line, sozinho e com seus amigos na BDN!
-        Divirta-se com Crash, Roleta e muito mais!
-      </h2>
+      <h2>Jogue agora, como quiser, com quem quiser e quanto quiser</h2>
 
-      <div class="jogos">
+      <div class="hub-destaque">
+        <div class="hub-painel">
+          <span class="hub-etiqueta">Sala em destaque</span>
+          <img src="assets/aviao.png" alt="Avi&atilde;ozinho">
+          <h3>Avi&atilde;ozinho</h3>
+          <p>Crash r&aacute;pido, placar vivo e aquela tens&atilde;o de clicar antes do multiplicador cair.</p>
+          <a class="botao-prata" href="index_aviao.html">Jogar agora</a>
+        </div>
 
-        <a class="card card-button" href="index_aviao.html">
-          <img src="assets/aviao.png" alt="aviãozinho">
-          <span>Jogo do avião</span>
-        </a>
+        <div class="hub-status" id="ranking">
+          <div class="placar-topo">
+            <h3>Placar de L&iacute;deres</h3>
+            <span class="status-ao-vivo">
+              <span class="status-bolinha"></span>
+              Ao vivo
+            </span>
+          </div>
+          <ol class="ranking-lista">
+            <li data-player="odraciR">
+              <span class="ranking-posicao">Primeiro</span>
+              <strong class="ranking-nome">odraciR</strong>
+              <span class="ranking-pontos">0 pts</span>
+            </li>
+            <li data-player="MarceloBone">
+              <span class="ranking-posicao">Segundo</span>
+              <strong class="ranking-nome">MarceloBone</strong>
+              <span class="ranking-pontos">0 pts</span>
+            </li>
+            <li data-player="Luczao">
+              <span class="ranking-posicao">Terceiro</span>
+              <strong class="ranking-nome">Luczao</strong>
+              <span class="ranking-pontos">0 pts</span>
+            </li>
+            <li data-player="Sherlok Homo">
+              <span class="ranking-posicao">Quarto</span>
+              <strong class="ranking-nome">Sherlok Homo</strong>
+              <span class="ranking-pontos">0 pts</span>
+            </li>
+            <li data-player="Megalo">
+              <span class="ranking-posicao">Quinto</span>
+              <strong class="ranking-nome">Megalo</strong>
+              <span class="ranking-pontos">0 pts</span>
+            </li>
+          </ol>
+          <p>Atualiza&ccedil;&otilde;es do placar ao vivo</p>
+        </div>
+      </div>
 
-        <a class="card card-button" href="off.html">
-          <img src="assets/blocos.png" alt="Jogo de blocos">
-          <span>Jogo do blocos</span>
-        </a>
+    </section>
 
-        <a class="card card-button" href="off.html">
-          <img src="assets/aviao.png" alt="Jogo de cartas">
-          <span>Placeholder</span>
-        </a>
+    <section class="conteudo hub-section" id="catalogo">
+      <h2>Nossos Jogos</h2>
 
-        <a class="card card-button" href="off.html">
-          <img src="assets/cartas.png" alt="Jogo de cartas">
-          <span>Jogo de baralho</span>
-        </a>
+      <div class="hub-grid">
+        <article class="hub-card" id="aviao">
+          <img src="assets/aviao.png" alt="Avi&atilde;ozinho">
+          <div>
+            <span class="hub-etiqueta online">Online</span>
+            <h3>Avi&atilde;ozinho</h3>
+            <p>Multiplicador subindo, saque no tempo certo e placar para disputar com amigos.</p>
+            <a class="botao-prata" href="index_aviao.html">Abrir sala</a>
+          </div>
+        </article>
 
+        <article class="hub-card" id="blocos">
+          <img src="assets/blocos.png" alt="Blocos">
+          <div>
+            <span class="hub-etiqueta">Em beta</span>
+            <h3>Blocos</h3>
+            <p>Quebre linhas, fa&ccedil;a combo e suba no ranking semanal do fliperama BDN.</p>
+            <span class="botao-prata botao-em-breve">Em breve</span>
+          </div>
+        </article>
+
+        <article class="hub-card" id="cartas">
+          <img src="assets/cartas.png" alt="Cartas">
+          <div>
+            <span class="hub-etiqueta">Mesa aberta</span>
+            <h3>Cartas</h3>
+            <p>Partidas casuais com mesa retr&ocirc;, naipes gigantes e disputas por pontua&ccedil;&atilde;o.</p>
+            <span class="botao-prata botao-em-breve">Em breve</span>
+          </div>
+        </article>
+
+        <article class="hub-card" id="roleta">
+          <img src="assets/cartas.png" alt="Roleta">
+          <div>
+            <span class="hub-etiqueta">Em breve</span>
+            <h3>Roleta</h3>
+            <p>Uma sala de sorte com visual cl&aacute;ssico, efeitos simples e rodadas r&aacute;pidas.</p>
+            <span class="botao-prata botao-em-breve">Em breve</span>
+          </div>
+        </article>
       </div>
     </section>
+
   </main>
 
-  <div id="modal-login" class="modal">
-
-    <div class="modal-conteudo">
-
-      <span class="fechar" onclick="fecharModal()">&times;</span>
-
-      <h2>Login</h2>
-
-      <input type="text" id="login-user" placeholder="Usuário">
-
-      <input type="password" id="login-senha" placeholder="Senha">
-
-      <button class="entrar" onclick="login()">Entrar</button>
-
-      <p id="mensagem-login"></p>
-
-    </div>
-
-  </div>
-
-  <div id="modal-cadastro" class="modal">
-
-    <div class="modal-conteudo">
-
-      <span class="fechar" onclick="fecharCadastro()">&times;</span>
-
-      <h2>Cadastro</h2>
-
-      <input type="text" id="cadastro-user" placeholder="Usuário">
-
-      <input type="password" id="cadastro-senha" placeholder="Senha">
-
-      <button class="entrar" onclick="cadastrar()">Cadastrar</button>
-
-      <p id="mensagem-cadastro"></p>
-
-    </div>
-
-  </div>
-
   <script>
-
     let currentPlayers = 4523;
     let isIncreasing = true;
+    const posicoesRanking = ["Primeiro", "Segundo", "Terceiro", "Quarto", "Quinto"];
+    const rankingPlayers = [
+      { name: "odraciR", points: 0, order: Math.random() },
+      { name: "MarceloBone", points: 0, order: Math.random() },
+      { name: "Luczao", points: 0, order: Math.random() },
+      { name: "Sherlok Homo", points: 0, order: Math.random() },
+      { name: "Megalo", points: 0, order: Math.random() }
+    ];
 
     function updatePlayerCount() {
-
       if (isIncreasing) {
-
         currentPlayers += Math.floor(Math.random() * 10) + 1;
 
         if (currentPlayers > 10000) {
           isIncreasing = false;
         }
-
       } else {
-
         currentPlayers -= Math.floor(Math.random() * 8) + 1;
 
         if (currentPlayers < 3000) {
@@ -137,38 +169,94 @@
 
     setInterval(updatePlayerCount, 2000);
 
-    function abrirModal() {
-      document.getElementById("modal-login").style.display = "flex";
+    function getRandomNumber(min, max) {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
     }
 
-    function fecharModal() {
-      document.getElementById("modal-login").style.display = "none";
+    function formatPoints(points) {
+      return points + " pts";
     }
 
-    function login() {
+    function updateRankingTexts() {
+      const rankingItems = document.querySelectorAll(".ranking-lista li");
 
-      let usuario = document.getElementById("login-user").value;
-      let senha = document.getElementById("login-senha").value;
+      rankingItems.forEach((item, index) => {
+        const player = rankingPlayers.find((currentPlayer) => {
+          return currentPlayer.name === item.dataset.player;
+        });
 
-      let usuarioSalvo = localStorage.getItem("usuario");
-      let senhaSalva = localStorage.getItem("senha");
-
-      if(usuario === usuarioSalvo && senha === senhaSalva){
-
-        document.getElementById("mensagem-login").innerHTML =
-        "Login realizado!";
-
-        document.getElementById("area-login").style.display = "none";
-
-        fecharModal();
-
-      } else {
-
-        document.getElementById("mensagem-login").innerHTML =
-        "Usuário ou senha incorretos!";
-      }
+        item.querySelector(".ranking-posicao").textContent = posicoesRanking[index];
+        item.querySelector(".ranking-pontos").textContent = formatPoints(player.points);
+      });
     }
 
+    function animateRankingChanges(previousPositions) {
+      const rankingItems = document.querySelectorAll(".ranking-lista li");
+
+      rankingItems.forEach((item) => {
+        const previousTop = previousPositions.get(item.dataset.player);
+        const currentTop = item.getBoundingClientRect().top;
+
+        if (previousTop === undefined) {
+          return;
+        }
+
+        const movement = previousTop - currentTop;
+
+        if (movement !== 0) {
+          item.classList.add("ranking-mudou");
+          item.style.transition = "none";
+          item.style.transform = "translateY(" + movement + "px)";
+          item.getBoundingClientRect();
+
+          requestAnimationFrame(() => {
+            item.style.transition = "";
+            item.style.transform = "";
+          });
+
+          window.setTimeout(() => {
+            item.classList.remove("ranking-mudou");
+          }, 850);
+        }
+      });
+    }
+
+    function renderRanking() {
+      const rankingList = document.querySelector(".ranking-lista");
+      const previousPositions = new Map();
+
+      rankingList.querySelectorAll("li").forEach((item) => {
+        previousPositions.set(item.dataset.player, item.getBoundingClientRect().top);
+      });
+
+      rankingPlayers.sort((playerA, playerB) => {
+        if (playerB.points !== playerA.points) {
+          return playerB.points - playerA.points;
+        }
+
+        return playerA.order - playerB.order;
+      });
+
+      rankingPlayers.forEach((player) => {
+        const item = rankingList.querySelector('[data-player="' + player.name + '"]');
+        rankingList.appendChild(item);
+      });
+
+      updateRankingTexts();
+      animateRankingChanges(previousPositions);
+    }
+
+    function updateRankingPoints() {
+      rankingPlayers.forEach((player) => {
+        player.points += getRandomNumber(1, 10);
+        player.order = Math.random();
+      });
+
+      renderRanking();
+    }
+
+    renderRanking();
+    setInterval(updateRankingPoints, 10000);
   </script>
 
 </body>
