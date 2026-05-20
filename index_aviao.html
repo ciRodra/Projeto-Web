@@ -51,6 +51,15 @@
       <div class="game-frame">
         <canvas id="gameCanvas" width="960" height="540" aria-label="Área jogável"></canvas>
 
+        <div class="game-hud" aria-live="polite">
+          <span>Pontos</span>
+          <strong id="scoreTextFullscreen">0</strong>
+        </div>
+
+        <button class="fullscreen-button" id="fullscreenButton" type="button" aria-label="Ativar tela cheia" title="Tela cheia">
+          <i class="fas fa-expand"></i>
+        </button>
+
         <div class="game-overlay is-visible" id="startOverlay">
           <div class="overlay-panel">
             <h2>Pronto para decolar?</h2>
@@ -136,7 +145,10 @@
       startButton: document.getElementById("startButton"),
       restartButton: document.getElementById("restartButton"),
       scoreText: document.getElementById("scoreText"),
-      finalScore: document.getElementById("finalScore")
+      scoreTextFullscreen: document.getElementById("scoreTextFullscreen"),
+      finalScore: document.getElementById("finalScore"),
+      gameFrame: document.querySelector(".game-frame"),
+      fullscreenButton: document.getElementById("fullscreenButton")
     };
 
     const CONFIG = {
@@ -155,6 +167,7 @@
       planeHeight: 58,
       nightStartScore: 15,
       dayReturnScore: 25,
+      buildingStartScore: 20,
       maxDelta: 0.033
     };
 
@@ -357,6 +370,62 @@
     function updateScore(nextScore) {
       game.score = nextScore;
       elements.scoreText.textContent = String(nextScore);
+      elements.scoreTextFullscreen.textContent = String(nextScore);
+    }
+
+    function getFullscreenElement() {
+      return document.fullscreenElement || document.webkitFullscreenElement;
+    }
+
+    function requestGameFullscreen() {
+      if (elements.gameFrame.requestFullscreen) {
+        return elements.gameFrame.requestFullscreen();
+      }
+
+      if (elements.gameFrame.webkitRequestFullscreen) {
+        return elements.gameFrame.webkitRequestFullscreen();
+      }
+
+      return Promise.reject();
+    }
+
+    function exitGameFullscreen() {
+      if (document.exitFullscreen) {
+        return document.exitFullscreen();
+      }
+
+      if (document.webkitExitFullscreen) {
+        return document.webkitExitFullscreen();
+      }
+
+      return Promise.reject();
+    }
+
+    function updateFullscreenButton() {
+      const isFullscreen = getFullscreenElement() === elements.gameFrame;
+      const icon = elements.fullscreenButton.querySelector("i");
+
+      icon.className = isFullscreen ? "fas fa-compress" : "fas fa-expand";
+      elements.fullscreenButton.title = isFullscreen ? "Sair da tela cheia" : "Tela cheia";
+      elements.fullscreenButton.setAttribute(
+        "aria-label",
+        isFullscreen ? "Sair da tela cheia" : "Ativar tela cheia"
+      );
+    }
+
+    function toggleFullscreen() {
+      const fullscreenElement = getFullscreenElement();
+      const action = fullscreenElement ? exitGameFullscreen() : requestGameFullscreen();
+
+      Promise.resolve(action)
+        .then(updateFullscreenButton)
+        .catch(() => {
+          elements.fullscreenButton.classList.add("fullscreen-error");
+
+          window.setTimeout(() => {
+            elements.fullscreenButton.classList.remove("fullscreen-error");
+          }, 650);
+        });
     }
 
     function spawnObstacle(xPosition) {
@@ -621,6 +690,12 @@
       const bottomY = obstacle.gapY + CONFIG.gapHeight;
       const bottomHeight = CONFIG.height - CONFIG.runwayHeight - bottomY;
 
+      if (game.score >= CONFIG.buildingStartScore) {
+        drawBuilding(obstacle.x, 0, CONFIG.obstacleWidth, topHeight, true);
+        drawBuilding(obstacle.x, bottomY, CONFIG.obstacleWidth, bottomHeight, false);
+        return;
+      }
+
       drawTower(obstacle.x, 0, CONFIG.obstacleWidth, topHeight, true);
       drawTower(obstacle.x, bottomY, CONFIG.obstacleWidth, bottomHeight, false);
     }
@@ -672,6 +747,74 @@
       ctx.strokeRect(x - 9, capY, width + 18, capHeight);
     }
 
+    function drawBuilding(x, y, width, height, inverted) {
+      if (height <= 0) {
+        return;
+      }
+
+      const body = ctx.createLinearGradient(x, y, x + width, y);
+      body.addColorStop(0, "#20263a");
+      body.addColorStop(0.48, "#59627f");
+      body.addColorStop(1, "#171b2a");
+
+      ctx.fillStyle = body;
+      ctx.fillRect(x, y, width, height);
+
+      ctx.fillStyle = "rgba(255, 255, 255, 0.08)";
+      ctx.fillRect(x + 8, y, 16, height);
+
+      drawBuildingWindows(x, y, width, height);
+      drawBuildingEdge(x, y, width, height, inverted);
+    }
+
+    function drawBuildingWindows(x, y, width, height) {
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(x, y, width, height);
+      ctx.clip();
+
+      const night = game.nightLevel;
+      const windowColors = night > 0.35
+        ? ["#ffe071", "#ffd15f", "#fff0a8"]
+        : ["#d7f1ff", "#bfe4ff", "#f2fbff"];
+      const windowGlow = night > 0.35 ? "rgba(255, 217, 106, 0.24)" : "rgba(255, 255, 255, 0.08)";
+      const windowWidth = 11;
+      const windowHeight = 14;
+      const gapX = 12;
+      const gapY = 22;
+
+      for (let rowIndex = 0, rowY = y + 18; rowY < y + height - 12; rowIndex += 1, rowY += gapY) {
+        for (let colIndex = 0, colX = x + 13; colX < x + width - 12; colIndex += 1, colX += gapX + windowWidth) {
+          ctx.fillStyle = windowColors[(rowIndex + colIndex) % windowColors.length];
+          ctx.fillRect(colX, rowY, windowWidth, windowHeight);
+
+          if (night > 0.35) {
+            ctx.fillStyle = windowGlow;
+            ctx.fillRect(colX - 2, rowY - 2, windowWidth + 4, windowHeight + 4);
+          }
+        }
+      }
+
+      ctx.restore();
+    }
+
+    function drawBuildingEdge(x, y, width, height, inverted) {
+      const edgeHeight = 18;
+      const edgeY = inverted ? y + height - edgeHeight : y;
+
+      ctx.fillStyle = "#101522";
+      ctx.fillRect(x - 5, edgeY, width + 10, edgeHeight);
+
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.2)";
+      ctx.lineWidth = 2;
+      ctx.strokeRect(x - 5, edgeY, width + 10, edgeHeight);
+
+      if (!inverted) {
+        ctx.fillStyle = "#101522";
+        ctx.fillRect(x + width * 0.42, y - 18, 8, 18);
+      }
+    }
+
     function drawPlane() {
       const plane = game.plane;
 
@@ -713,6 +856,9 @@
 
     elements.startButton.addEventListener("click", resetGame);
     elements.restartButton.addEventListener("click", resetGame);
+    elements.fullscreenButton.addEventListener("click", toggleFullscreen);
+    document.addEventListener("fullscreenchange", updateFullscreenButton);
+    document.addEventListener("webkitfullscreenchange", updateFullscreenButton);
     canvas.addEventListener("pointerdown", flap);
 
     window.addEventListener("keydown", (event) => {
