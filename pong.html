@@ -1,0 +1,1133 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta
+name="viewport"
+content="width=device-width, initial-scale=1.0"
+>
+<title>
+BDN.GAMES | PONG
+</title>
+<link
+rel="stylesheet"
+href="styles/paginaInicial.css"
+>
+<link
+rel="stylesheet"
+href="pong.css"
+>
+<link
+rel="stylesheet"
+href=
+"https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+>
+</head>
+<body>
+
+<header>
+  <div class="topo">
+
+    <a class="logo" href="index.html">BDN.GAMES</a>
+
+    <div class="header-right">
+      <div class="info">
+        <span>4534 jogadores nas salas</span>
+        <div class="linha"></div>
+      </div>
+
+      <nav>
+        <a href="index.html">Jogos</a>
+        <a href="#">Meu Perfil</a>
+        <a href="#">Desenvolvedores</a>
+      </nav>
+    </div>
+
+    <div class="botoes-auth">
+      <a href="#" class="btn-login">Login</a>
+      <a href="#" class="btn-cadastro">Cadastre-se</a>
+    </div>
+
+  </div>
+</header>
+
+<main class="pong-main">
+
+  <section class="pong-box">
+
+    <div class="pong-topo">
+
+      <h1>Pong</h1>
+
+      <div class="score-box">
+
+    <div class="score-player">
+    <span>Você</span>
+    <strong id="leftScore">0</strong>
+    </div>
+
+    <div class="score-middle">
+     <span class="placar-x">X</span>
+
+     <div id="seriesText">
+      MD3 • 0 x 0
+     </div>
+    </div>
+
+    <div class="score-player">
+     <span>CPU</span>
+     <strong id="rightScore">0</strong>
+    </div>
+
+    </div>
+     </div>
+
+    <div class="game-area">
+
+      <div class="start-screen" id="startScreen">
+
+      <div class="overlay-panel">
+
+      <h2>
+      Pronto para jogar?
+      </h2>
+
+      <p>
+      Derrote a CPU na melhor de 3.
+      </p>
+
+      <button
+      id="startButton"
+      class="game-button"
+>
+
+       Iniciar
+
+       </button>
+
+       </div>
+
+      </div>
+
+      <canvas id="game" width="1000" height="500"></canvas>
+
+    </div>
+
+  </section>
+
+</main>
+
+<footer class="rodape">
+
+<div class="rodape-topo">
+
+<div class="rodape-esquerda">
+
+<h2 class="logo-rodape">
+
+BDN.GAMES
+
+</h2>
+
+<nav class="rodape-links">
+
+<a href="suporte.html">
+
+Suporte
+
+</a>
+
+<span>|</span>
+
+<a href="acordo.html">
+
+Acordo de Utilização
+
+</a>
+
+<span>|</span>
+
+<a href="privacidade.html">
+
+Política de Privacidade
+
+</a>
+
+<span>|</span>
+
+<a href="#">
+
+Contato
+
+</a>
+
+</nav>
+
+</div>
+
+<div class="rodape-direita">
+
+<span class="texto-redes">
+
+Siga-nos!
+
+</span>
+
+<div class="redes">
+
+<a
+href="#"
+aria-label="Facebook"
+>
+
+<i class="fa-brands fa-facebook-f"></i>
+
+</a>
+
+<a
+href="#"
+aria-label="Twitter"
+>
+
+<i class="fa-brands fa-twitter"></i>
+
+</a>
+
+<a
+href="#"
+aria-label="Instagram"
+>
+
+<i class="fa-brands fa-instagram"></i>
+
+</a>
+
+<a
+href="#"
+aria-label="Youtube"
+>
+
+<i class="fa-brands fa-youtube"></i>
+
+</a>
+
+</div>
+
+<div class="selo-reclame">
+
+<img
+
+src=
+"assets/reclame-aqui.png"
+
+alt=
+"Reclame Aqui"
+
+>
+
+</div>
+
+</div>
+
+</div>
+
+<div class="rodape-bottom">
+
+<p>
+
+BDN.GAMES ©
+Todos os direitos reservados
+
+</p>
+
+</div>
+
+</footer>
+
+<script>
+
+const canvas =
+document.getElementById(
+"game"
+);
+
+const ctx =
+canvas.getContext(
+"2d"
+);
+
+const leftScoreEl =
+document.getElementById(
+"leftScore"
+);
+
+const rightScoreEl =
+document.getElementById(
+"rightScore"
+);
+
+const seriesText =
+document.getElementById(
+"seriesText"
+);
+
+const startButton =
+document.getElementById(
+"startButton"
+);
+
+const startScreen =
+document.getElementById(
+"startScreen"
+);
+
+let leftScore=0;
+let rightScore=0;
+
+let playerSeries=0;
+let cpuSeries=0;
+
+const GAME_GOALS=3;
+
+let gameStarted=false;
+let gameEnded=false;
+
+let waitingServe=false;
+
+const paddleWidth=12;
+const paddleHeight=100;
+
+const player={
+
+x:20,
+
+y:200,
+
+width:paddleWidth,
+
+height:paddleHeight,
+
+speed:4.2
+
+};
+
+const cpu={
+
+x:
+canvas.width-32,
+
+y:200,
+
+width:
+paddleWidth,
+
+height:
+paddleHeight
+
+};
+
+const ball={
+
+x:
+canvas.width/2,
+
+y:
+canvas.height/2,
+
+radius:10,
+
+speedX:4,
+
+speedY:1
+
+};
+
+const hitSound =
+
+new Audio(
+
+"assets/4359__noisecollector__pongblipf4.wav"
+
+);
+
+hitSound.volume = 0.25;
+
+let upPressed=false;
+let downPressed=false;
+
+document.addEventListener(
+"keydown",
+(e)=>{
+
+if(
+e.key==="ArrowUp" ||
+
+e.key==="ArrowDown"
+){
+
+e.preventDefault();
+
+}
+
+if(
+
+e.key==="w" ||
+
+e.key==="W" ||
+
+e.key==="ArrowUp"
+
+){
+
+upPressed=true;
+
+}
+
+if(
+
+e.key==="s" ||
+
+e.key==="S" ||
+
+e.key==="ArrowDown"
+
+){
+
+downPressed=true;
+
+}
+
+}
+);
+
+document.addEventListener(
+"keyup",
+(e)=>{
+
+if(
+
+e.key==="w" ||
+
+e.key==="W" ||
+
+e.key==="ArrowUp"
+
+){
+
+upPressed=false;
+
+}
+
+if(
+
+e.key==="s" ||
+
+e.key==="S" ||
+
+e.key==="ArrowDown"
+
+){
+
+downPressed=false;
+
+}
+
+}
+);
+
+function drawRect(
+x,y,w,h,color
+){
+
+ctx.fillStyle=
+color;
+
+ctx.fillRect(
+x,y,w,h
+);
+
+}
+
+function drawBall(){
+
+ctx.beginPath();
+
+ctx.arc(
+ball.x,
+ball.y,
+ball.radius,
+0,
+Math.PI*2
+);
+
+ctx.fillStyle=
+"white";
+
+ctx.fill();
+
+ctx.closePath();
+
+}
+
+function draw(){
+
+ctx.clearRect(
+0,
+0,
+canvas.width,
+canvas.height
+);
+
+drawRect(
+0,
+0,
+canvas.width,
+canvas.height,
+"black"
+);
+
+for(
+let i=0;
+i<canvas.height;
+i+=30
+){
+
+drawRect(
+canvas.width/2-2,
+i,
+4,
+15,
+"white"
+);
+
+}
+
+drawRect(
+player.x,
+player.y,
+player.width,
+player.height,
+"white"
+);
+
+drawRect(
+cpu.x,
+cpu.y,
+cpu.width,
+cpu.height,
+"white"
+);
+
+drawBall();
+
+}
+
+function movePlayer(){
+
+if(
+upPressed &&
+player.y>0
+){
+
+player.y-=
+player.speed;
+
+}
+
+if(
+
+downPressed &&
+
+player.y+
+player.height<
+
+canvas.height
+
+){
+
+player.y+=
+player.speed;
+
+}
+
+}
+
+function moveCPU(){
+
+if(
+waitingServe
+){
+return;
+}
+
+if(
+ball.speedX<0
+){
+return;
+}
+
+let center=
+
+cpu.y+
+
+cpu.height/2;
+
+let prediction=
+
+8+
+
+Math.random()*10;
+
+let futureY=
+
+ball.y+
+
+(
+ball.speedY*
+prediction
+);
+
+let distance=
+
+Math.abs(
+futureY-center
+);
+
+let speed=2;
+
+if(
+distance>60
+){
+speed=3.2;
+}
+
+if(
+distance>120
+){
+speed=4.5;
+}
+
+if(
+distance>180
+){
+speed=5.5;
+}
+
+let reaction=45;
+
+let error=
+
+(
+Math.random()-0.5
+)
+
+*
+
+(
+
+distance>120
+
+?40
+
+:55
+
+);
+
+futureY+=error;
+
+if(
+center<
+futureY-reaction
+){
+
+cpu.y+=speed;
+
+}
+
+else if(
+center>
+futureY+reaction
+){
+
+cpu.y-=speed;
+
+}
+
+cpu.y=
+
+Math.max(
+
+0,
+
+Math.min(
+
+cpu.y,
+
+canvas.height-
+cpu.height
+
+)
+
+);
+
+}
+
+function moveBall(){
+
+if(
+waitingServe
+){
+return;
+}
+
+ball.x+=
+ball.speedX;
+
+ball.y+=
+ball.speedY;
+
+if(
+ball.y - ball.radius <= 0
+){
+
+ball.y =
+ball.radius;
+
+ball.speedY =
+Math.abs(
+ball.speedY
+);
+
+}
+
+if(
+ball.y + ball.radius >=
+canvas.height
+){
+
+ball.y =
+
+canvas.height -
+
+ball.radius;
+
+ball.speedY =
+
+-Math.abs(
+ball.speedY
+);
+
+}
+
+if(
+
+ball.x-
+ball.radius<
+
+player.x+
+player.width &&
+
+ball.x>
+player.x &&
+
+ball.y>
+player.y &&
+
+ball.y<
+player.y+
+player.height
+
+){
+
+ball.x=
+
+player.x+
+
+player.width+
+
+ball.radius;
+
+ball.speedX*=
+-1.03;
+
+let hit=
+
+ball.y-
+
+(
+
+player.y+
+
+player.height/2
+
+);
+
+ball.speedY+=
+hit*0.05;
+
+hitSound.currentTime=0;
+
+hitSound.play();
+
+}
+if(
+
+ball.x+
+ball.radius>
+
+cpu.x &&
+
+ball.x<
+cpu.x+
+cpu.width &&
+
+ball.y>
+cpu.y &&
+
+ball.y<
+cpu.y+
+cpu.height
+
+){
+
+ball.x=
+
+cpu.x-
+
+ball.radius;
+
+ball.speedX*=
+-1.03;
+
+let hit=
+
+ball.y-
+
+(
+
+cpu.y+
+
+cpu.height/2
+
+);
+
+ball.speedY+=
+hit*0.05;
+
+hitSound.currentTime=0;
+
+hitSound.play();
+
+}
+
+if(
+ball.x<0
+){
+
+rightScore++;
+
+rightScoreEl.innerText=
+rightScore;
+
+resetBall();
+
+}
+
+if(
+ball.x>
+canvas.width
+){
+
+leftScore++;
+
+leftScoreEl.innerText=
+leftScore;
+
+resetBall();
+
+}
+
+const maxSpeed=8;
+
+if(
+Math.abs(
+ball.speedX
+)>
+maxSpeed
+){
+
+ball.speedX=
+
+Math.sign(
+ball.speedX
+)
+
+*
+
+maxSpeed;
+
+}
+
+if(
+Math.abs(
+ball.speedY
+)>
+maxSpeed
+){
+
+ball.speedY=
+
+Math.sign(
+ball.speedY
+)
+
+*
+
+maxSpeed;
+
+}
+
+checkSeries();
+
+}
+
+function checkSeries(){
+
+if(
+leftScore>=GAME_GOALS
+){
+
+playerSeries++;
+
+newRound();
+
+}
+
+if(
+rightScore>=GAME_GOALS
+){
+
+cpuSeries++;
+
+newRound();
+
+}
+
+seriesText.innerText=
+
+`MD3 • ${playerSeries} x ${cpuSeries}`;
+
+if(
+playerSeries>=2
+){
+
+endGame(
+"VOCÊ VENCEU!"
+);
+
+}
+
+if(
+cpuSeries>=2
+){
+
+endGame(
+"CPU VENCEU!"
+);
+
+}
+
+}
+
+function newRound(){
+
+leftScore=0;
+rightScore=0;
+
+leftScoreEl.innerText=0;
+rightScoreEl.innerText=0;
+
+resetBall();
+
+}
+
+function resetBall(){
+
+waitingServe=true;
+
+ball.x=
+canvas.width/2;
+
+ball.y=
+canvas.height/2;
+
+ball.speedX=0;
+
+ball.speedY=0;
+
+setTimeout(()=>{
+
+const dir=
+
+Math.random()>0.5
+
+?1:-1;
+
+ball.speedX=
+3.2*dir;
+
+let angle=
+
+Math.random()
+
+*4
+
+-2;
+
+if(
+Math.abs(
+angle
+)<1
+){
+
+angle=
+
+angle>0
+
+?1.2
+
+:-1.2;
+
+}
+
+ball.speedY=
+angle;
+
+waitingServe=false;
+
+},1500);
+
+}
+
+function endGame(msg){
+
+gameEnded=true;
+
+gameStarted=false;
+
+startScreen.style.display=
+"flex";
+
+startScreen.innerHTML=
+
+`
+
+<div class="overlay-panel">
+
+<h2>
+
+${
+msg==="VOCÊ VENCEU!"
+
+?
+
+"Você venceu!"
+
+:
+
+"CPU venceu!"
+
+}
+
+</h2>
+
+<p>
+
+Melhor de 3 concluída.
+
+</p>
+
+<button
+
+id="restartBtn"
+
+class="game-button"
+
+>
+
+Jogar novamente
+
+</button>
+
+</div>
+
+`;
+
+document
+.getElementById(
+"restartBtn"
+)
+
+.addEventListener(
+"click",
+()=>{
+
+location.reload();
+
+}
+
+);
+
+}
+
+function gameLoop(){
+
+if(
+gameEnded||
+!gameStarted
+){
+return;
+}
+
+movePlayer();
+
+moveCPU();
+
+moveBall();
+
+draw();
+
+requestAnimationFrame(
+gameLoop
+);
+
+}
+
+startButton.addEventListener(
+"click",
+()=>{
+
+if(
+gameStarted
+)
+return;
+
+gameStarted=true;
+
+startScreen.style.display=
+"none";
+
+resetBall();
+
+gameLoop();
+
+}
+);
+
+draw();
+
+</script>
+
+</body>
+
+</html>
