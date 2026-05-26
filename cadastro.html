@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Cadastro - BDN.GAMES</title>
+
+    <link rel="stylesheet" href="styles/paginaInicial.css">
+    <link rel="stylesheet" href="styles/cadastro.css">
+</head>
+
+<body>
+
+    <header>
+
+        <div class="topo">
+
+            <a class="logo" href="index.html">
+                <img src="assets/netobet.png" alt="BDN.GAMES">
+            </a>
+
+            <div class="header-right">
+
+                <div class="info">
+
+                    <span id="playerCount">4523 jogadores nas salas</span>
+
+                    <div class="linha"></div>
+
+                </div>
+
+                <nav>
+
+                    <a href="index.html">Jogos</a>
+
+                    <a href="off.html">Meu Perfil</a>
+
+                    <a href="off.html">Desenvolvedores</a>
+
+                </nav>
+
+            </div>
+
+            <div class="botoes-auth">
+
+                <a href="index.html" class="btn-login">
+                    Voltar
+                </a>
+
+            </div>
+
+        </div>
+
+    </header>
+
+    <main>
+
+        <section class="conteudo cadastro-box">
+
+            <h2>Crie sua conta na BDN.GAMES</h2>
+
+            <form id="formCadastro">
+
+                <input type="text" placeholder="Nome completo" required>
+
+                <input type="text" placeholder="Usuário" required>
+
+                <input type="email" placeholder="E-mail" required>
+
+                <input type="text" placeholder="Telefone" required>
+
+                <input type="text" placeholder="CPF" required>
+
+                <input type="password" placeholder="Senha" required>
+
+                <div class="acoes-cadastro">
+
+                    <button type="submit" class="btn-enviar">
+
+                        Cadastrar
+
+                    </button>
+
+                    <button type="reset" class="btn-limpar">
+
+                        Limpar
+
+                    </button>
+
+                </div>
+
+            </form>
+
+            <p id="mensagemCadastro"></p>
+
+        </section>
+
+    </main>
+
+    <script>
+
+        let currentPlayers = 4523;
+        let isIncreasing = true;
+
+        function updatePlayerCount() {
+
+            if (isIncreasing) {
+
+                currentPlayers += Math.floor(Math.random() * 10) + 1;
+
+                if (currentPlayers > 10000) {
+
+                    isIncreasing = false;
+                }
+
+            } else {
+
+                currentPlayers -= Math.floor(Math.random() * 8) + 1;
+
+                if (currentPlayers < 3000) {
+
+                    isIncreasing = true;
+                }
+            }
+
+            document.getElementById("playerCount").textContent =
+                currentPlayers + " jogadores nas salas";
+        }
+
+        setInterval(updatePlayerCount, 2000);
+
+        const form = document.getElementById("formCadastro");
+
+        form.addEventListener("submit", function (event) {
+
+            event.preventDefault();
+
+            document.getElementById("mensagemCadastro").innerHTML =
+                "Cadastro visual realizado com sucesso!";
+
+        });
+
+    </script>
+
+</body>
+
+</html>

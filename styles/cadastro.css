@@ -1,0 +1,133 @@
+.cadastro-box {
+
+  max-width: 700px;
+
+  margin: auto;
+}
+
+#formCadastro {
+
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 20px;
+}
+
+#formCadastro input {
+
+  padding: 15px;
+
+  border: none;
+
+  border-radius: 5px;
+
+  font-size: 16px;
+
+  font-family: Georgia, serif;
+
+  background: linear-gradient(
+    135deg,
+    #ffffff 0%,
+    #dcdcdc 100%
+  );
+
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.5),
+    inset 0 -2px 5px rgba(0,0,0,0.15),
+    0 4px 6px rgba(0,0,0,0.3);
+}
+
+#formCadastro input:focus {
+
+  outline: 2px solid #28a745;
+}
+
+.acoes-cadastro {
+
+  display: flex;
+
+  justify-content: center;
+
+  gap: 20px;
+
+  margin-top: 10px;
+}
+
+.btn-enviar,
+.btn-limpar {
+
+  border: none;
+
+  padding: 14px 28px;
+
+  border-radius: 5px;
+
+  cursor: pointer;
+
+  color: white;
+
+  font-size: 18px;
+
+  font-weight: bold;
+
+  transition: all 0.3s ease;
+
+  box-shadow:
+    0 4px 6px rgba(0,0,0,0.3),
+    inset 0 1px 0 rgba(255,255,255,0.35),
+    inset 0 -2px 5px rgba(0,0,0,0.25);
+}
+
+.btn-enviar {
+
+  background: linear-gradient(
+    135deg,
+    #35d85d 0%,
+    #1e9e3f 100%
+  );
+}
+
+.btn-enviar:hover {
+
+  transform: translateY(-2px);
+
+  background: linear-gradient(
+    135deg,
+    #40e86a 0%,
+    #28b64c 100%
+  );
+}
+
+.btn-limpar {
+
+  background: linear-gradient(
+    135deg,
+    #d83b35 0%,
+    #a61f1f 100%
+  );
+}
+
+.btn-limpar:hover {
+
+  transform: translateY(-2px);
+
+  background: linear-gradient(
+    135deg,
+    #f04a4a 0%,
+    #c92828 100%
+  );
+}
+
+#mensagemCadastro {
+
+  margin-top: 25px;
+
+  text-align: center;
+
+  color: white;
+
+  font-size: 18px;
+
+  font-weight: bold;
+}
