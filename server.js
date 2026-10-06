@@ -7,12 +7,12 @@ const path = require('path');
 
 const app = express();
 
-// Middleware
+
 app.use(cors());
 app.use(express.json());
-app.use(express.static(__dirname)); // Serve arquivos estáticos
+app.use(express.static(__dirname));
 
-// Configuração do banco de dados
+
 const pool = mysql.createPool({
     host: process.env.DB_HOST,
     user: process.env.DB_USER,
@@ -22,12 +22,11 @@ const pool = mysql.createPool({
     connectionLimit: 10
 });
 
-// Rota de cadastro
+
 app.post('/api/cadastro', async (req, res) => {
     try {
         const { nome_completo, usuario, email, telefone, cpf, senha } = req.body;
 
-        // Validações básicas
         if (!nome_completo || !usuario || !email || !cpf || !senha) {
             return res.status(400).json({ 
                 sucesso: false, 
@@ -35,11 +34,10 @@ app.post('/api/cadastro', async (req, res) => {
             });
         }
 
-        // Hash da senha
         const saltRounds = 10;
         const senhaHash = await bcrypt.hash(senha, saltRounds);
 
-        // Inserir no banco
+  
         const query = `
             INSERT INTO usuarios (nome_completo, usuario, email, telefone, cpf, senha) 
             VALUES (?, ?, ?, ?, ?, ?)
